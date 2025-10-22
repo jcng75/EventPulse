@@ -8,3 +8,37 @@
 
 ## Initial Improvements
 In my previous project [s5](https://github.com/jcng75/s5), I was not satisfied with the way that the backend configuration was setup.  Doing some research, I found that optimizations could be made using a `backend.conf` file.  Shown in the [README.md](../../README.md), the state file can be initialized referencing the created file.  Additionally, I added a `terraform.tfvars` file, allowing values to be customized outside the created terraform code.  Both files are limited to the user, as they were included within the `.gitignore` file.
+
+## Terraform
+In addition to the initial improvements, I wanted to change the way I handled the creation of resources.  I believe that various components depended on each other, and that affected the whole development process.  I want to start by creating the components that don't have dependencies first (i.e S3, DynamoDB, etc.).  From there, the components that require them can be build on using them as dependencies.  Additionally, IAM policies should be reconfigured last.  In the beginning, services will be granted access greater than they are needed, but will be adjusted to support the principle of least privilege.  This will improve the speed to begin the foundation of the terraform configurations.
+
+### S3
+
+Initial creation of the buckets was simple to follow.  Using the terraform.tfvars file, I created an object variable for each bucket that needed to be created.  For the `force_destroy` argument, it has been set to default but for the project I configured the value to be **true**.
+
+```
+# terraform.tfvars
+
+quarantine_bucket = {
+  name = "eventpulse-quarantine-bucket"
+  region = "us-east-1"
+  force_destroy = true
+}
+
+```
+
+One interesting behavior I noticed was when I set the name of both buckets to be the same (i.e eventpulse-processing-bucket).  When running the terraform applies, only **one** of the buckets was created with providing an error.  Updating the quarantine bucket name caused the individual S3 bucket to get replaced.  To fix this problem, I ran `terraform state list` to get the resources and tained both of them.
+
+```
+# Confirm the resouces in state
+terraform state list
+aws_s3_bucket.processing_bucket
+aws_s3_bucket.quarantine_bucket
+
+# Taint the resources
+terraform taint aws_s3_bucket.processing_bucket
+terraform taint aws_s3_bucket.quarantine_bucket
+
+# Rerun the apply
+terraform apply
+```
