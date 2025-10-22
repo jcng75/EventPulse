@@ -1,3 +1,8 @@
+variable "account_id" {
+  description = "The AWS account ID where resources will be created"
+  type        = string
+}
+
 variable "processing_bucket" {
   type = object({
     name              = string

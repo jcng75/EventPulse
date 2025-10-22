@@ -15,6 +15,31 @@ resource "aws_s3_bucket_versioning" "processing_bucket" {
   }
 }
 
+resource "aws_s3_bucket_policy" "processing_bucket_policy" {
+  bucket = aws_s3_bucket.processing_bucket.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect    = "Allow"
+        Principal = "*"
+        Action = [
+          "s3:*"
+        ]
+        Resource = ["${aws_s3_bucket.processing_bucket.arn}/*",
+          aws_s3_bucket.processing_bucket.arn
+        ]
+        Condition = {
+          StringEquals = {
+            "aws:PrincipalAccount" = var.account_id
+          }
+        }
+      }
+    ]
+  })
+}
+
 resource "aws_s3_bucket" "quarantine_bucket" {
   bucket        = var.quarantine_bucket.name
   region        = var.quarantine_bucket.region
@@ -30,4 +55,29 @@ resource "aws_s3_bucket_versioning" "quarantine_bucket" {
   versioning_configuration {
     status = var.quarantine_bucket.versioning_status
   }
+}
+
+resource "aws_s3_bucket_policy" "quarantine_bucket_policy" {
+  bucket = aws_s3_bucket.quarantine_bucket.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect    = "Allow"
+        Principal = "*"
+        Action = [
+          "s3:*"
+        ]
+        Resource = ["${aws_s3_bucket.quarantine_bucket.arn}/*",
+          aws_s3_bucket.quarantine_bucket.arn
+        ]
+        Condition = {
+          StringEquals = {
+            "aws:PrincipalAccount" = var.account_id
+          }
+        }
+      }
+    ]
+  })
 }
