@@ -42,3 +42,7 @@ terraform taint aws_s3_bucket.quarantine_bucket
 # Rerun the apply
 terraform apply
 ```
+
+After the buckets were created, I added configurations to each bucket.  I first updated the buckets to have configurations for [versioning](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_versioning).  This was done by adding to the variables.  A validation check needed to be added to verify that the string added was a valid argument value.  
+
+From there, an [S3 bucket policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_policy) was created for each bucket.  For this part of the project, security was configured to allow full access for any principals within the AWS account.  This will be revisited later when we focus on hardening security.
