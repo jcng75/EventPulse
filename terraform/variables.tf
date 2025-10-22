@@ -1,19 +1,31 @@
 variable "processing_bucket" {
   type = object({
-    name          = string
-    region        = string
-    force_destroy = optional(bool, false)
+    name              = string
+    region            = string
+    force_destroy     = optional(bool, false)
+    versioning_status = optional(string, "Enabled")
   })
   description = "Configuration for the S3 processing bucket"
+
+  validation {
+    condition     = contains(["Enabled", "Suspended", "Disabled"], var.processing_bucket.versioning_status)
+    error_message = "versioning_status must be one of 'Enabled', 'Suspended', or 'Disabled'."
+  }
 }
 
 variable "quarantine_bucket" {
   type = object({
-    name          = string
-    region        = string
-    force_destroy = optional(bool, false)
+    name              = string
+    region            = string
+    force_destroy     = optional(bool, false)
+    versioning_status = optional(string, "Enabled")
   })
   description = "Configuration for the S3 quarantine bucket"
+
+  validation {
+    condition     = contains(["Enabled", "Suspended", "Disabled"], var.quarantine_bucket.versioning_status)
+    error_message = "versioning_status must be one of 'Enabled', 'Suspended', or 'Disabled'."
+  }
 }
 
 variable "tags" {

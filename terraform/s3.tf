@@ -8,6 +8,13 @@ resource "aws_s3_bucket" "processing_bucket" {
   }, var.tags)
 }
 
+resource "aws_s3_bucket_versioning" "processing_bucket" {
+  bucket = aws_s3_bucket.processing_bucket.id
+  versioning_configuration {
+    status = var.processing_bucket.versioning_status
+  }
+}
+
 resource "aws_s3_bucket" "quarantine_bucket" {
   bucket        = var.quarantine_bucket.name
   region        = var.quarantine_bucket.region
@@ -16,4 +23,11 @@ resource "aws_s3_bucket" "quarantine_bucket" {
   tags = merge({
     Name = var.quarantine_bucket.name
   }, var.tags)
+}
+
+resource "aws_s3_bucket_versioning" "quarantine_bucket" {
+  bucket = aws_s3_bucket.quarantine_bucket.id
+  versioning_configuration {
+    status = var.quarantine_bucket.versioning_status
+  }
 }
