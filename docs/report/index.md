@@ -46,3 +46,16 @@ terraform apply
 After the buckets were created, I added configurations to each bucket.  I first updated the buckets to have configurations for [versioning](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_versioning).  This was done by adding to the variables.  A validation check needed to be added to verify that the string added was a valid argument value.  
 
 From there, an [S3 bucket policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_policy) was created for each bucket.  For this part of the project, security was configured to allow full access for any principals within the AWS account.  This will be revisited later when we focus on hardening security.
+
+### DynamoDB
+
+When starting work on DynamoDB, I learned a lot with how the service worked.  The first thing I needed clarification on was when I tried to standup the [aws_dynamodb_table](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/dynamodb_table) resource.  Reading through the documentation, it was a little unclear on how the `hash_key` and `range_key` were used.  Based on my research, the hash key acts as a unique identifier if the range key does not exist.  In other terms, this can be considered the primary key in NoSQL databases.  If the range key **was** included into the table, the hash key **no longer** has to be unique.  One example of this can be having a person ID as the hash key and a `dateCreated` as a range key.
+
+Upon learning this information, it was clear to me that our requirements were not sufficient enough to proceed with the project.  In doing so, I went back to the [index.md](../architecture/index.md) to establish JSON requirements for what users can submit to the S3 bucket.  In this case, we wanted to simulate music data, whether it be a song or album from an artist.  In doing so, this led me to decide the hash_key as `ArtistID` and the sort_key as `ItemID`.  The ItemID had to be unique, so it follows this naming convention:
+```
+"EntityType#Title"
+```
+The `EntityType` would be either Track or Album.  For example, the hash key and range key could look like this:
+| ArtistID | ItemID |
+|:---------|:-------:|
+| Knock2 | TRACK#FeelULuvMe |
