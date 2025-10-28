@@ -15,6 +15,17 @@ This document outlines the architecture to be implemented in the project. The di
 - Ensure auditing of all API interactions and data access for compliance.
 - Design the solution to be highly available, fault tolerant, and cost-effective.
 
+# JSON Requirements
+- JSON content will simulate a user submitting music data
+- Each JSON file must contain the following attributes:
+    - Artist
+    - EntityType (Track, Album)
+    - Title
+- Optionally, the JSON file can also include the following attributes:
+    - Year
+    - Features
+    - Duration
+
 # Functionality
 
 ## User Functionalities
