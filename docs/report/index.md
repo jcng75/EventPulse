@@ -78,3 +78,26 @@ When running the initial apply, I ran into the following error:
 ```
 
 Upon doing further reading, it was explained that autoscaling must be enabled to use provisioned for the `billing_mode`.  This would involve the `aws_appautoscaling_target` resource and defining scaling policies for each target.  To circumvent this, I went with setting the billing mode to `PAY_PER_REQUEST`.  This also led me to removing the capability to add read/write capacity.
+
+`DynamoDB Screenshot Completion:`
+
+<img src="./img/dynamodb-table-creation.jpg" alt="dynamodb-table-creation"/>
+
+To verify that the table was functioning as intended, I ran the following command:
+```
+aws dynamodb put-item \
+  --table-name event-pulse-table \
+  --item '{
+    "ArtistID": {"S": "Knock2"},
+    "ItemID": {"S": "TRACK#FeelULuvMe"},
+    "Duration": {"N": "234"},
+    "Streams": {"N": "10000000"},
+    "EntityType": {"S": "Track"},
+    "Title": {"S": "Feel U Luv Me"}
+  }'
+```
+When running this command, it is important to note the --item flag takes in a map as input.  This map must be proper JSON, and takes a **String** as input being converted to a JSON object.  Additionally, each argument inputted must take the attribute as the Key and `{"DATATYPE": "VALUE"}` as the value (see [documentation](https://docs.aws.amazon.com/cli/latest/reference/dynamodb/put-item.html) for more information).  Due to these circumstances, single quotes were used around the map object and double quotes were used within the string.
+
+`DynamoDB Verification Screenshot:`
+
+<img src="./img/dynamodb-query-verification.jpg" alt="dynamodb-table-creation"/>
