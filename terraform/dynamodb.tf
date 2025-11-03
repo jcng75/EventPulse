@@ -12,6 +12,11 @@ resource "aws_dynamodb_table" "table" {
     type = "S"
   }
 
+  attribute {
+    name = var.dynamodb_table.range_key
+    type = "S"
+  }
+
   replica {
     region_name = "us-east-2"
   }

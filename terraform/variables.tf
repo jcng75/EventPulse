@@ -35,11 +35,11 @@ variable "quarantine_bucket" {
 
 variable "dynamodb_table" {
   type = object({
-    name           = string
-    read_capacity  = number
-    write_capacity = number
-    hash_key       = string
-    range_key      = optional(string)
+    name           = optional(string, "event-pulse-table")
+    read_capacity  = optional(number, 1)
+    write_capacity = optional(number, 1)
+    hash_key       = optional(string, "ArtistID")
+    range_key      = optional(string, "ItemID")
   })
   description = "Configuration for the DynamoDB table"
 }
