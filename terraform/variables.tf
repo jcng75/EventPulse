@@ -33,6 +33,15 @@ variable "quarantine_bucket" {
   }
 }
 
+variable "dynamodb_table" {
+  type = object({
+    name      = optional(string, "event-pulse-table")
+    hash_key  = optional(string)
+    range_key = optional(string)
+  })
+  description = "Configuration for the DynamoDB table"
+}
+
 variable "tags" {
   description = "A map of tags to add to all resources"
   type        = map(string)
