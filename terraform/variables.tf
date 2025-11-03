@@ -38,8 +38,8 @@ variable "dynamodb_table" {
     name           = optional(string, "event-pulse-table")
     read_capacity  = optional(number, 1)
     write_capacity = optional(number, 1)
-    hash_key       = optional(string, "ArtistID")
-    range_key      = optional(string, "ItemID")
+    hash_key       = optional(string)
+    range_key      = optional(string)
   })
   description = "Configuration for the DynamoDB table"
 }

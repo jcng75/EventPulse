@@ -59,3 +59,14 @@ The `EntityType` would be either Track or Album.  For example, the hash key and 
 | ArtistID | ItemID |
 |:---------|:-------:|
 | Knock2 | TRACK#FeelULuvMe |
+
+There are also additional attributes that can be added to the row entry.  In this project, I plan on adding the following attributes:
+- Features
+- Duration (seconds)
+- Streams
+- EntityType
+- Title
+
+It should be noted that these attributes do NOT need to get added into the terraform resource.  Since DynamoDB is schemaless, only indexes and keys need to be defined.  The rest can vary per item.  This makes sense as we may not need certain attributes like `Features` for a specific song or album.
+
+When discovering this, the logic on attributes needed to be updated.  Since the hash_key is always required but the range_key is not, a conditional was set for both the attribute block and the `range_key` argument.
