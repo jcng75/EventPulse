@@ -70,3 +70,11 @@ There are also additional attributes that can be added to the row entry.  In thi
 It should be noted that these attributes do NOT need to get added into the terraform resource.  Since DynamoDB is schemaless, only indexes and keys need to be defined.  The rest can vary per item.  This makes sense as we may not need certain attributes like `Features` for a specific song or album.
 
 When discovering this, the logic on attributes needed to be updated.  Since the hash_key is always required but the range_key is not, a conditional was set for both the attribute block and the `range_key` argument.
+
+When running the initial apply, I ran into the following error:
+
+```
+│ Error: creating AWS DynamoDB Table (event-pulse-table): replicas: creating replica (us-east-2): operation error DynamoDB: UpdateTable, https response error StatusCode: 400, RequestID: XXXXXXXXXXXXXXXXXXX, api error ValidationException: Table write capacity should either be Pay-Per-Request or AutoScaled.
+```
+
+Upon doing further reading, it was explained that autoscaling must be enabled to use provisioned for the `billing_mode`.  This would involve the `aws_appautoscaling_target` resource and defining scaling policies for each target.  To circumvent this, I went with setting the billing mode to `PAY_PER_REQUEST`.  This also led me to removing the capability to add read/write capacity.

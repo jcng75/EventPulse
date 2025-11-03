@@ -1,8 +1,6 @@
 resource "aws_dynamodb_table" "table" {
-  name           = var.dynamodb_table.name
-  billing_mode   = "PROVISIONED"
-  read_capacity  = var.dynamodb_table.read_capacity
-  write_capacity = var.dynamodb_table.write_capacity
+  name         = var.dynamodb_table.name
+  billing_mode = "PAY_PER_REQUEST"
 
   hash_key = var.dynamodb_table.hash_key
   # Only create range_key attribute if range_key is provided
