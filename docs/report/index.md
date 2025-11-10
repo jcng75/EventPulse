@@ -151,3 +151,9 @@ python3 process_json.py
 INFO:root:Getting object from S3 bucket: eventpulse-processing-bucket, key: test-object.json
 INFO:root:{'ArtistID': {'S': 'ISOKNOCK'}, 'ItemID': {'S': 'TRACK#4EVR'}, 'Duration': {'N': '195'}, 'EntityType': {'S': 'Track'}, 'Streams': {'N': '6000000'}, 'Title': {'S': '4EVR'}, 'Features': {'L': ['Knock2', 'Isoxo']}, 'Year': {'N': '2024'}}
 ```
+
+The next step was to verify the structure of the JSON object.  Based on the requirements, the following attributes are required:
+- ArtistID
+- ItemID
+Additionally, I wanted to make sure that no extraneous attributes were included.  To do this, I created a dictionary that defined the expected attributes and their data types.  The script would iterate through each key in the JSON object and verify that it existed in the expected structure.  If any required attributes were missing, an error would be logged and the object would be marked as invalid.
+Finally, the script would check that the data types of each attribute matched the expected types.  Based on how the JSON object is structured, each attribute is a dictionary with a single key representing the data type (e.g., "S" for string, "N" for number, "L" for list).  The script would compare the data type key in the JSON object against the expected type from the structure dictionary.
