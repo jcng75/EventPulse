@@ -147,7 +147,7 @@ The objective of this script was to read from the event, verify the JSON structu
 When building the script, I learned more about the [get_object](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/client/get_object.html) method from the boto3 S3 client.  The response object returns a `body` attribute that is of type [StreamingBody](https://botocore.amazonaws.com/v1/documentation/api/latest/reference/response.html).  This object has a `read()` method that returns the bytes of the object.  From there, I was able to decode the bytes into a string and load it as a JSON object.
 
 ```
-python3 process_json.py                                                                                                                                                              0.03s   11:13  12.5G  
+python3 process_json.py
 INFO:root:Getting object from S3 bucket: eventpulse-processing-bucket, key: test-object.json
 INFO:root:{'ArtistID': {'S': 'ISOKNOCK'}, 'ItemID': {'S': 'TRACK#4EVR'}, 'Duration': {'N': '195'}, 'EntityType': {'S': 'Track'}, 'Streams': {'N': '6000000'}, 'Title': {'S': '4EVR'}, 'Features': {'L': ['Knock2', 'Isoxo']}, 'Year': {'N': '2024'}}
 ```
