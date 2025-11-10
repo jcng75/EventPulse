@@ -30,7 +30,14 @@ def validate_json_structure(json_object):
         "Year": "N",
         "Features": "L"
     }
+    required_fields = ["ArtistID", "ItemID"]
+
     is_valid_structure = True
+
+    for field in required_fields:
+        if field not in json_object:
+            logging.error(f"Missing required field: {field}")
+            is_valid_structure = False
 
     for key, value in json_object.items():
         # Check if the key is valid in our JSON structure
