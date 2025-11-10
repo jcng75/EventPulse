@@ -101,3 +101,53 @@ When running this command, it is important to note the --item flag takes in a ma
 `DynamoDB Verification Screenshot:`
 
 <img src="./img/dynamodb-query-verification.jpg" alt="dynamodb-table-creation"/>
+
+### JSON Processing (Python)
+
+The next step of the project that I started to work on was the JSON processing lambda script.  Before starting, I wanted to configure the script to be able to test locally.  Boto3 is a required Python3 library for this project.  
+
+Ran the following commands:
+```
+python3 -m venv .venv
+source .venv/bin/activate
+pip install boto3
+```
+
+The objective of this script was to read from the event, verify the JSON structure, and insert the data into DynamoDB.  If the structure was invalid, the object would be moved to the quarantine bucket.  We first needed to add an object into the S3 processing bucket to simulate the event that would trigger the lambda function.  As a result, `test-object.json` was created within the `scripts/process_json` directory.  The content of the file is as follows:
+
+```
+{
+  "ArtistID": {
+    "S": "ISOKNOCK"
+  },
+  "ItemID": {
+    "S": "TRACK#4EVR"
+  },
+  "Duration": {
+    "N": "195"
+  },
+  "EntityType": {
+    "S": "Track"
+  },
+  "Streams": {
+    "N": "6000000"
+  },
+  "Title": {
+    "S": "4EVR"
+  },
+  "Features": {
+    "L": ["Knock2", "Isoxo"]
+  },
+  "Year": {
+    "N": "2024"
+  }
+}
+```
+
+When building the script, I learned more about the [get_object](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/client/get_object.html) method from the boto3 S3 client.  The response object returns a `body` attribute that is of type [StreamingBody](https://botocore.amazonaws.com/v1/documentation/api/latest/reference/response.html).  This object has a `read()` method that returns the bytes of the object.  From there, I was able to decode the bytes into a string and load it as a JSON object.
+
+```
+python3 process_json.py                                                                                                                                                              0.03s   11:13  12.5G  
+INFO:root:Getting object from S3 bucket: eventpulse-processing-bucket, key: test-object.json
+INFO:root:{'ArtistID': {'S': 'ISOKNOCK'}, 'ItemID': {'S': 'TRACK#4EVR'}, 'Duration': {'N': '195'}, 'EntityType': {'S': 'Track'}, 'Streams': {'N': '6000000'}, 'Title': {'S': '4EVR'}, 'Features': {'L': ['Knock2', 'Isoxo']}, 'Year': {'N': '2024'}}
+```

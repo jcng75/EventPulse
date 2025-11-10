@@ -1,0 +1,26 @@
+{
+  "ArtistID": {
+    "S": "ISOKNOCK"
+  },
+  "ItemID": {
+    "S": "TRACK#4EVR"
+  },
+  "Duration": {
+    "N": "195"
+  },
+  "EntityType": {
+    "S": "Track"
+  },
+  "Streams": {
+    "N": "6000000"
+  },
+  "Title": {
+    "S": "4EVR"
+  },
+  "Features": {
+    "L": ["Knock2", "Isoxo"]
+  },
+  "Year": {
+    "N": "2024"
+  }
+}
