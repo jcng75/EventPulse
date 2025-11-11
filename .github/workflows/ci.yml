@@ -1,0 +1,19 @@
+name: CI Checks
+
+on:
+  push:
+    branches-ignore:
+      - main
+  pull_request:
+
+jobs:
+  run_checks:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Run Pre-commit Checks
+      uses: pre-commit/action@v2.0.0
+      with:
+        extra_args: --all-files
