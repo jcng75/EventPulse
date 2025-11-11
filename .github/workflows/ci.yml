@@ -1,20 +1,4 @@
 name: CI Checks
-inputs:
-  tflint-version:
-    description: "TFLint version to use"
-    required: false
-    type: string
-    default: "0.48.0"
-  tfsec-version:
-    description: "TFSec version to use"
-    required: false
-    type: string
-    default: "1.28.4"
-  terraform-docs-version:
-    description: "Terraform Docs version to use"
-    required: false
-    type: string
-    default: "0.16.0"
 
 on:
   pull_request:
