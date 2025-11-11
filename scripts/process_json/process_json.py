@@ -6,6 +6,7 @@ import boto3
 import os
 import json
 import logging
+import botocore
 
 dynamodb_client = boto3.client("dynamodb", region_name="us-east-1")
 s3_client = boto3.client("s3")
@@ -18,6 +19,30 @@ def get_s3_object(bucket, key):
     response = s3_client.get_object(Bucket=bucket, Key=key)
     content = response['Body'].read().decode('utf-8')
     return json.loads(content)
+
+def in_quarantine(s3_key, quarantine_bucket):
+    logging.info(f"Checking if object {s3_key} is in quarantine bucket: {quarantine_bucket}")
+    try:
+        s3_client.head_object(Bucket=quarantine_bucket, Key=s3_key)
+        logging.info("Object found in quarantine.")
+        return True
+    except botocore.exceptions.ClientError as e:
+        if e.response['Error']['Code'] in ("404", "NoSuchKey"):
+            logging.info("Object not found in quarantine.")
+            return False
+        else:
+            logging.error(f"Error checking quarantine: {e}")
+            return False
+
+def move_to_quarantine(processing_bucket, quarantine_bucket, s3_key):
+    logging.info(f"Moving object {s3_key} from {processing_bucket} to {quarantine_bucket}")
+    s3_client.copy_object(
+        Bucket=quarantine_bucket,
+        CopySource={'Bucket': processing_bucket, 'Key': s3_key},
+        Key=s3_key
+    )
+    s3_client.delete_object(Bucket=processing_bucket, Key=s3_key)
+    logging.info("Object moved to quarantine successfully.")
 
 def validate_json_structure(json_object):
     type_checks = {
@@ -49,7 +74,7 @@ def validate_json_structure(json_object):
         dict_keys = value.keys()
         value_to_check = next(iter(dict_keys))
         if type_checks[key] != value_to_check:
-            print(f"Checking {key}: expected {type_checks[key]}, got {value_to_check}")
+            logging.info(f"Checking {key}: expected {type_checks[key]}, got {value_to_check}")
             logging.error(f"Field {key} has incorrect type. Expected {type_checks[key]}, got {value_to_check}")
             is_valid_structure = False
 
@@ -60,6 +85,14 @@ def validate_json_structure(json_object):
 
     return is_valid_structure
 
+def insert_into_dynamodb(table_name, json_object):
+    logging.info(f"Inserting item into DynamoDB table: {table_name}")
+    dynamodb_client.put_item(
+        TableName=table_name,
+        Item={k: v for k, v in json_object.items()}
+    )
+    logging.info("Item inserted successfully into DynamoDB.")
+
 def lambda_handler(event, context):
     s3_key = event.get("Key", "test-object.json")
     processing_bucket = event.get("Bucket", "eventpulse-processing-bucket")
@@ -67,9 +100,20 @@ def lambda_handler(event, context):
     dynamodb_table = os.environ.get("DYNAMODB_TABLE", "event-pulse-table")
     quarantine_bucket = os.environ.get("QUARANTINE_BUCKET", "eventpulse-quarantine-bucket")
 
+    if in_quarantine(s3_key, quarantine_bucket):
+        logging.info("Object is already in quarantine. Exiting processing.")
+        return {"statusCode": 200, "body": "Object is already in quarantine."}
+
     json_object = get_s3_object(processing_bucket, s3_key)
-    validate_json_structure(json_object)
-    pass
+    is_valid = validate_json_structure(json_object)
+
+    if not is_valid:
+        move_to_quarantine(processing_bucket, quarantine_bucket, s3_key)
+        return
+    else:
+        insert_into_dynamodb(dynamodb_table, json_object)
+
+    return {"statusCode": 200, "body": "Processing completed successfully."}
 
 if __name__ == "__main__":
     test_event = {
