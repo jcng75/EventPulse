@@ -1,9 +1,6 @@
 name: CI Checks
 
 on:
-  push:
-    branches-ignore:
-      - main
   pull_request:
 
 jobs:
@@ -19,6 +16,4 @@ jobs:
         python-version: '3.12'
 
     - name: Run Pre-commit Checks
-      uses: pre-commit/action@v2.0.0
-      with:
-        extra_args: --all-files
+      uses: pre-commit/action@v3.0.1
