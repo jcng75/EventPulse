@@ -18,7 +18,10 @@
     "S": "4EVR"
   },
   "Features": {
-    "L": ["Knock2", "Isoxo"]
+    "L": [
+      { "S": "Knock2" },
+      { "S": "Isoxo" }
+    ]
   },
   "Year": {
     "N": "2024"
