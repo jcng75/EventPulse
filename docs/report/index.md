@@ -157,3 +157,36 @@ The next step was to verify the structure of the JSON object.  Based on the requ
 - ItemID
 Additionally, I wanted to make sure that no extraneous attributes were included.  To do this, I created a dictionary that defined the expected attributes and their data types.  The script would iterate through each key in the JSON object and verify that it existed in the expected structure.  If any required attributes were missing, an error would be logged and the object would be marked as invalid.
 Finally, the script would check that the data types of each attribute matched the expected types.  Based on how the JSON object is structured, each attribute is a dictionary with a single key representing the data type (e.g., "S" for string, "N" for number, "L" for list).  The script would compare the data type key in the JSON object against the expected type from the structure dictionary.
+
+The final step was to insert the valid JSON object into DynamoDB.  Using the [put_item](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html#DynamoDB.Table.put_item) method from the boto3 DynamoDB resource, the item was inserted into the table.  If the structure was invalid, the object would be moved to the quarantine bucket using the [copy_object](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/client/copy_object.html) method followed by a [delete_object](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/client/delete_object.html) method to remove it from the processing bucket.
+
+When running the script, the following output was observed:
+```
+ERROR:root:Error checking quarantine: An error occurred (404) when calling the HeadObject operation: Not Found
+```
+It seems that the logic to check if the object already exists in the quarantine bucket is not functioning as intended.  Upon further inspection, I realized that the `head_object` method raises a `ClientError` exception when the object does not exist.  To fix this, I updated the exception handling to catch `ClientError` and check for a 404 error code.
+
+Another problem I was having was with the list data type for the `Features` attribute.  Initially, I was trying to verify the data type by checking if the value was of type `list`.  However, in DynamoDB, lists are represented as a dictionary with a single key "L" containing a list of values.  What I did not realize was that the values within the list also needed to be in DynamoDB format.  For example, a list of strings should be represented as:
+```
+"Features": {
+  "L": [
+    { "S": "Knock2" },
+    { "S": "Isoxo" }
+  ]
+}
+```
+
+To fix this, I updated the test JSON object and reuploaded the object to the S3 processing bucket.  After running the script again, the output was as follows:
+
+```
+INFO:root:Checking if object test-object.json is in quarantine bucket: eventpulse-quarantine-bucket
+INFO:root:Object not found in quarantine.
+INFO:root:Getting object from S3 bucket: eventpulse-processing-bucket, key: test-object.json
+INFO:root:JSON structure is valid.
+INFO:root:Inserting item into DynamoDB table: event-pulse-table
+INFO:root:Item inserted successfully into DynamoDB.
+```
+
+`DynamoDB Table Result Screenshot:`
+
+<img src="./img/dynamodb-script-result.jpg" alt="dynamodb-script-result"/>
