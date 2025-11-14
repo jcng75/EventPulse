@@ -13,8 +13,8 @@
 
 | Name | Version |
 |------|---------|
-| <a name="provider_archive"></a> [archive](#provider\_archive) | 2.7.1 |
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.21.0 |
+| <a name="provider_archive"></a> [archive](#provider\_archive) | ~> 2.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 6.0 |
 
 ## Modules
 
@@ -44,11 +44,11 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_account_id"></a> [account\_id](#input\_account\_id) | The AWS account ID where resources will be created | `string` | n/a | yes |
-| <a name="input_dynamodb_table"></a> [dynamodb\_table](#input\_dynamodb\_table) | Configuration for the DynamoDB table | <pre>object({<br>    name      = optional(string, "event-pulse-table")<br>    hash_key  = optional(string)<br>    range_key = optional(string)<br>  })</pre> | n/a | yes |
-| <a name="input_process_json_lambda"></a> [process\_json\_lambda](#input\_process\_json\_lambda) | Configuration for the Process JSON Lambda function | <pre>object({<br>    function_name = optional(string, "eventpulse_process_json_lambda_function")<br>    role_name     = optional(string, "eventpulse_process_json_lambda_role")<br>    runtime       = optional(string, "python3.12")<br>  })</pre> | `{}` | no |
-| <a name="input_processing_bucket"></a> [processing\_bucket](#input\_processing\_bucket) | Configuration for the S3 processing bucket | <pre>object({<br>    name              = string<br>    region            = string<br>    force_destroy     = optional(bool, false)<br>    versioning_status = optional(string, "Enabled")<br>  })</pre> | n/a | yes |
-| <a name="input_quarantine_bucket"></a> [quarantine\_bucket](#input\_quarantine\_bucket) | Configuration for the S3 quarantine bucket | <pre>object({<br>    name              = string<br>    region            = string<br>    force_destroy     = optional(bool, false)<br>    versioning_status = optional(string, "Enabled")<br>  })</pre> | n/a | yes |
-| <a name="input_tags"></a> [tags](#input\_tags) | A map of tags to add to all resources | `map(string)` | <pre>{<br>  "Orchestration": "Terraform",<br>  "Project": "EventPulse"<br>}</pre> | no |
+| <a name="input_dynamodb_table"></a> [dynamodb\_table](#input\_dynamodb\_table) | Configuration for the DynamoDB table | <pre>object({<br/>    name      = optional(string, "event-pulse-table")<br/>    hash_key  = optional(string)<br/>    range_key = optional(string)<br/>  })</pre> | n/a | yes |
+| <a name="input_process_json_lambda"></a> [process\_json\_lambda](#input\_process\_json\_lambda) | Configuration for the Process JSON Lambda function | <pre>object({<br/>    function_name = optional(string, "eventpulse_process_json_lambda_function")<br/>    role_name     = optional(string, "eventpulse_process_json_lambda_role")<br/>    runtime       = optional(string, "python3.12")<br/>  })</pre> | `{}` | no |
+| <a name="input_processing_bucket"></a> [processing\_bucket](#input\_processing\_bucket) | Configuration for the S3 processing bucket | <pre>object({<br/>    name              = string<br/>    region            = string<br/>    force_destroy     = optional(bool, false)<br/>    versioning_status = optional(string, "Enabled")<br/>  })</pre> | n/a | yes |
+| <a name="input_quarantine_bucket"></a> [quarantine\_bucket](#input\_quarantine\_bucket) | Configuration for the S3 quarantine bucket | <pre>object({<br/>    name              = string<br/>    region            = string<br/>    force_destroy     = optional(bool, false)<br/>    versioning_status = optional(string, "Enabled")<br/>  })</pre> | n/a | yes |
+| <a name="input_tags"></a> [tags](#input\_tags) | A map of tags to add to all resources | `map(string)` | <pre>{<br/>  "Orchestration": "Terraform",<br/>  "Project": "EventPulse"<br/>}</pre> | no |
 
 ## Outputs
 
