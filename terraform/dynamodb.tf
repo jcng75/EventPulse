@@ -4,7 +4,8 @@ resource "aws_dynamodb_table" "table" {
 
   hash_key = var.dynamodb_table.hash_key
   # Only create range_key attribute if range_key is provided
-  range_key = var.dynamodb_table.range_key != null ? var.dynamodb_table.range_key : null
+  range_key      = var.dynamodb_table.range_key != null ? var.dynamodb_table.range_key : null
+  stream_enabled = true
 
   attribute {
     name = var.dynamodb_table.hash_key

@@ -42,6 +42,16 @@ variable "dynamodb_table" {
   description = "Configuration for the DynamoDB table"
 }
 
+variable "process_json_lambda" {
+  type = object({
+    function_name = optional(string, "eventpulse_process_json_lambda_function")
+    role_name     = optional(string, "eventpulse_process_json_lambda_role")
+    runtime       = optional(string, "python3.12")
+  })
+  description = "Configuration for the Process JSON Lambda function"
+  default     = {}
+}
+
 variable "tags" {
   description = "A map of tags to add to all resources"
   type        = map(string)

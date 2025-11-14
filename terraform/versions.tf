@@ -4,6 +4,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 6.0"
     }
+    archive = {
+      source  = "hashicorp/archive"
+      version = "~> 2.0"
+    }
   }
   backend "s3" {
     region  = "us-east-1"
@@ -15,3 +19,5 @@ terraform {
 provider "aws" {
   region = "us-east-1"
 }
+
+provider "archive" {}
