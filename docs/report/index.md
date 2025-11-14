@@ -190,3 +190,16 @@ INFO:root:Item inserted successfully into DynamoDB.
 `DynamoDB Table Result Screenshot:`
 
 <img src="./img/dynamodb-script-result.jpg" alt="dynamodb-script-result"/>
+
+### JSON Processing (Terraform Lambda)
+
+The next step was to package the Python script as a Lambda function and deploy it using Terraform.  To do this, I followed the [Terraform documentation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function.html#basic-function-with-nodejs) referencing the `process_json.py` script.  When looking over the documentation, I noticed that the Lambda role was missing additional policies to allow access to S3 and DynamoDB.  To fix this, I created three `aws_iam_role_policy_attachment` resources to attach the necessary policies to the Lambda role:
+- AmazonDynamoDBFullAccess
+- AmazonS3FullAccess
+- AWSLambdaBasicExecutionRole
+At this moment, I am aware that these policies are too permissive and will be revisited later to implement the principle of least privilege.
+
+When configuring the Lambda function, I wanted to avoid manually creating a zip file for deployment.  To do this, I utilized the [archive_file](https://registry.terraform.io/providers/hashicorp/archive/latest/docs/data-sources/file) data source to automate the packaging of the Python script.  This data source takes in the path to the `process_json.py` file and creates a zip archive that can be referenced in the Lambda function resource.  After running the applies, I verified that the Lambda function was created successfully in the AWS Management Console.  After removing the test code from the script, I re-packaged and updated the lambda function.  By surprise, the script worked as intended without any issues.
+
+`Lambda Function Screenshot:`
+<img src="./img/lambda-test-screenshot.jpg" alt="lambda-function-test"/>
