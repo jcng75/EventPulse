@@ -114,10 +114,3 @@ def lambda_handler(event, context):
         insert_into_dynamodb(dynamodb_table, json_object)
 
     return {"statusCode": 200, "body": "Processing completed successfully."}
-
-if __name__ == "__main__":
-    test_event = {
-        "Key": "test-object.json",
-        "Bucket": "eventpulse-processing-bucket"
-    }
-    lambda_handler(test_event, None)
