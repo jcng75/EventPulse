@@ -209,3 +209,47 @@ When configuring the Lambda function, I wanted to avoid manually creating a zip 
 The next step of the project was to create an EventBridge rule to trigger the Lambda function when a new object is created in the S3 processing bucket.  To do this, I utilized the [aws_cloudwatch_event_rule](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_rule) resource to create the rule.  The event pattern was configured to match S3 `PutObject` events for the specific bucket.  For this project, I used the default event bus.
 
 When doing initial testing, I did not run into terraform apply errors.  However, when uploading a new object to the S3 processing bucket, the Lambda function was not being triggered.  After doing some research, I realized that an additional permission was needed to enable EventBridge notifications onto the S3 bucket. To fix this, I updated the s3.tf configuration file creating the [s3_bucket_notification](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_notification) resource.
+
+In adding my configurations, I was able to get the lambda function to trigger successfully.  To verify this, I created a new JSON object `second-test-object.json` and uploaded it to the S3 processing bucket.  The content of the file is as follows:
+
+```
+{
+  "ArtistID": {
+    "S": "ISOKNOCK"
+  },
+  "ItemID": {
+    "S": "TRACK#4EVR"
+  },
+  "Duration": {
+    "N": "216"
+  },
+  "EntityType": {
+    "S": "Track"
+  },
+  "Streams": {
+    "N": "7500000"
+  },
+  "Title": {
+    "S": "BLIND"
+  },
+  "Features": {
+    "L": [
+      { "S": "Knock2" },
+      { "S": "Isoxo" }
+    ]
+  },
+  "Year": {
+    "N": "2025"
+  }
+}
+```
+
+The following log was observed in CloudWatch Logs for the Lambda function:
+```
+{'version': '0', 'id': 'a0fa2f4f-a1e0-2b71-3324-1b0464e62a0a', 'detail-type': 'Object Created', 'source': 'aws.s3', 'account': 'xxxxxxxxxxxx', 'time': '2025-11-21T21:24:12Z', 'region': 'us-east-1', 'resources': ['arn:aws:s3:::eventpulse-processing-bucket'], 'detail': {'version': '0', 'bucket': {'name': 'eventpulse-processing-bucket'}, 'object': {'key': 'second-test-object.json', 'size': 354, 'etag': 'xxxxxxxxxxxxxxxxxxxxxxx', 'version-id': 'b7YcjgV4OVh5TAr2ed3RyXG73F_Zh78j', 'sequencer': 'xxxxxxxxxxxxxx'}, 'request-id': 'xxxxxxxxxxxxxx', 'requester': 'xxxxxxxxxxxxxxx', 'source-ip-address': 'xxx.x.xxx.xx', 'reason': 'PutObject'}}
+```
+
+This led me to updating the lambda function code to process the new object.  After debugging, I realized that the ItemID value was incorrect.  The value was set to `TRACK#4EVR` instead of `TRACK#BLIND`.  This highlighted an issue with testing to ensure that unique values were being used.  After updating the value, I re-uploaded the object to the S3 processing bucket.  In doing so, I saw successful processing within the DynamoDB table.
+
+`DynamoDB Table Result Screenshot:`
+<img src="./img/eventbridge-lambda-trigger-result.jpg" alt="eventbridge-result"/>
