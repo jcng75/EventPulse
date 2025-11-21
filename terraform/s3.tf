@@ -57,6 +57,11 @@ resource "aws_s3_bucket_versioning" "quarantine_bucket" {
   }
 }
 
+resource "aws_s3_bucket_notification" "enable_eventbridge" {
+  bucket      = aws_s3_bucket.processing_bucket.id
+  eventbridge = true
+}
+
 resource "aws_s3_bucket_policy" "quarantine_bucket_policy" {
   bucket = aws_s3_bucket.quarantine_bucket.id
 
