@@ -203,3 +203,7 @@ When configuring the Lambda function, I wanted to avoid manually creating a zip 
 
 `Lambda Function Screenshot:`
 <img src="./img/lambda-test-screenshot.jpg" alt="lambda-function-test"/>
+
+### EventBridge
+
+The next step of the project was to create an EventBridge rule to trigger the Lambda function when a new object is created in the S3 processing bucket.  To do this, I utilized the [aws_cloudwatch_event_rule](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_rule) resource to create the rule.  The event pattern was configured to match S3 `PutObject` events for the specific bucket.  For this project, I used the default event bus.
