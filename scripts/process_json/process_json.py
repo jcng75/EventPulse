@@ -81,6 +81,19 @@ def validate_json_structure(json_object):
 
     return is_valid_structure
 
+def in_check_dynamodb_table(partition_key, item_id, table_name):
+    print(f"Checking if ItemID {item_id} exists in DynamoDB table.")
+    response = dynamodb_client.get_item(
+        TableName=table_name,
+        Key={"ArtistID": {"S": partition_key}, "ItemID": {"S": item_id}}
+    )
+    if "Item" in response:
+        print("ItemID exists in DynamoDB.")
+        return True
+    else:
+        print("ItemID does not exist in DynamoDB.")
+        return False
+
 def insert_into_dynamodb(table_name, json_object):
     print(f"Inserting item into DynamoDB table: {table_name}")
     print(json_object.items())
@@ -103,9 +116,10 @@ def lambda_handler(event, context):
         return {"statusCode": 200, "body": "Object is already in quarantine."}
 
     json_object = get_s3_object(processing_bucket, s3_key)
-    is_valid = validate_json_structure(json_object)
+    is_valid = validate_json_structure(json_object) and not in_check_dynamodb_table(json_object["ArtistID"]["S"], json_object["ItemID"]["S"], dynamodb_table)
 
     if not is_valid:
+        print("Invalid JSON structure or duplicate ItemID. Moving to quarantine.")
         move_to_quarantine(processing_bucket, quarantine_bucket, s3_key)
         return
     else:
