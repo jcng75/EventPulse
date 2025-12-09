@@ -1,0 +1,29 @@
+{
+  "ArtistID": {
+    "S": "ISOKNOCK"
+  },
+  "ItemID": {
+    "S": "TRACK#BLIND"
+  },
+  "Duration": {
+    "N": "216"
+  },
+  "EntityType": {
+    "S": "Track"
+  },
+  "Streams": {
+    "N": "1300000"
+  },
+  "Title": {
+    "S": "BLIND"
+  },
+  "Features": {
+    "L": [
+      { "S": "Knock2" },
+      { "S": "Isoxo" }
+    ]
+  },
+  "Year": {
+    "N": "2024"
+  }
+}

@@ -5,44 +5,40 @@
 import boto3
 import os
 import json
-import logging
 import botocore
 
 dynamodb_client = boto3.client("dynamodb", region_name="us-east-1")
 s3_client = boto3.client("s3")
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger()
-
 def get_s3_object(bucket, key):
-    logging.info(f"Getting object from S3 bucket: {bucket}, key: {key}")
+    print(f"Getting object from S3 bucket: {bucket}, key: {key}")
     response = s3_client.get_object(Bucket=bucket, Key=key)
     content = response['Body'].read().decode('utf-8')
     return json.loads(content)
 
 def in_quarantine(s3_key, quarantine_bucket):
-    logging.info(f"Checking if object {s3_key} is in quarantine bucket: {quarantine_bucket}")
+    print(f"Checking if object {s3_key} is in quarantine bucket: {quarantine_bucket}")
     try:
         s3_client.head_object(Bucket=quarantine_bucket, Key=s3_key)
-        logging.info("Object found in quarantine.")
+        print("Object found in quarantine.")
         return True
     except botocore.exceptions.ClientError as e:
         if e.response['Error']['Code'] in ("404", "NoSuchKey"):
-            logging.info("Object not found in quarantine.")
+            print("Object not found in quarantine.")
             return False
         else:
-            logging.error(f"Error checking quarantine: {e}")
+            print(f"Error checking quarantine: {e}")
             return False
 
 def move_to_quarantine(processing_bucket, quarantine_bucket, s3_key):
-    logging.info(f"Moving object {s3_key} from {processing_bucket} to {quarantine_bucket}")
+    print(f"Moving object {s3_key} from {processing_bucket} to {quarantine_bucket}")
     s3_client.copy_object(
         Bucket=quarantine_bucket,
         CopySource={'Bucket': processing_bucket, 'Key': s3_key},
         Key=s3_key
     )
     s3_client.delete_object(Bucket=processing_bucket, Key=s3_key)
-    logging.info("Object moved to quarantine successfully.")
+    print("Object moved to quarantine successfully.")
 
 def validate_json_structure(json_object):
     type_checks = {
@@ -61,53 +57,69 @@ def validate_json_structure(json_object):
 
     for field in required_fields:
         if field not in json_object:
-            logging.error(f"Missing required field: {field}")
+            print(f"Missing required field: {field}")
             is_valid_structure = False
 
     for key, value in json_object.items():
         # Check if the key is valid in our JSON structure
         if key not in type_checks.keys():
-            logging.error(f"Field is not allowed in JSON structure: {key}")
+            print(f"Field is not allowed in JSON structure: {key}")
             is_valid_structure = False
             continue
         # Check if the value is the correct type
         dict_keys = value.keys()
         value_to_check = next(iter(dict_keys))
         if type_checks[key] != value_to_check:
-            logging.info(f"Checking {key}: expected {type_checks[key]}, got {value_to_check}")
-            logging.error(f"Field {key} has incorrect type. Expected {type_checks[key]}, got {value_to_check}")
+            print(f"Checking {key}: expected {type_checks[key]}, got {value_to_check}")
+            print(f"Field {key} has incorrect type. Expected {type_checks[key]}, got {value_to_check}")
             is_valid_structure = False
 
     if is_valid_structure:
-        logging.info("JSON structure is valid.")
+        print("JSON structure is valid.")
     else:
-        logging.error(f"JSON structure is invalid. - Acceptable fields are: {type_checks.keys()}")
+        print(f"JSON structure is invalid. - Acceptable fields are: {type_checks.keys()}")
 
     return is_valid_structure
 
+def in_check_dynamodb_table(partition_key, item_id, table_name):
+    print(f"Checking if ItemID {item_id} exists in DynamoDB table.")
+    response = dynamodb_client.get_item(
+        TableName=table_name,
+        Key={"ArtistID": {"S": partition_key}, "ItemID": {"S": item_id}}
+    )
+    if "Item" in response:
+        print("ItemID exists in DynamoDB.")
+        return True
+    else:
+        print("ItemID does not exist in DynamoDB.")
+        return False
+
 def insert_into_dynamodb(table_name, json_object):
-    logging.info(f"Inserting item into DynamoDB table: {table_name}")
+    print(f"Inserting item into DynamoDB table: {table_name}")
+    print(json_object.items())
     dynamodb_client.put_item(
         TableName=table_name,
         Item={k: v for k, v in json_object.items()}
     )
-    logging.info("Item inserted successfully into DynamoDB.")
+    print("Item inserted successfully into DynamoDB.")
 
 def lambda_handler(event, context):
-    s3_key = event.get("Key", "test-object.json")
-    processing_bucket = event.get("Bucket", "eventpulse-processing-bucket")
+    event_details = event["detail"]
+    s3_key = event_details["object"]["key"]
+    processing_bucket = event_details["bucket"]["name"]
 
     dynamodb_table = os.environ.get("DYNAMODB_TABLE", "event-pulse-table")
     quarantine_bucket = os.environ.get("QUARANTINE_BUCKET", "eventpulse-quarantine-bucket")
 
     if in_quarantine(s3_key, quarantine_bucket):
-        logging.info("Object is already in quarantine. Exiting processing.")
+        print("Object is already in quarantine. Exiting processing.")
         return {"statusCode": 200, "body": "Object is already in quarantine."}
 
     json_object = get_s3_object(processing_bucket, s3_key)
-    is_valid = validate_json_structure(json_object)
+    is_valid = validate_json_structure(json_object) and not in_check_dynamodb_table(json_object["ArtistID"]["S"], json_object["ItemID"]["S"], dynamodb_table)
 
     if not is_valid:
+        print("Invalid JSON structure or duplicate ItemID. Moving to quarantine.")
         move_to_quarantine(processing_bucket, quarantine_bucket, s3_key)
         return
     else:

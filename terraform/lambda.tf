@@ -50,6 +50,10 @@ resource "aws_lambda_function" "process_json_lambda" {
 
   runtime = var.process_json_lambda.runtime
 
+  lifecycle {
+    replace_triggered_by = [null_resource.replace_function]
+  }
+
   environment {
     variables = {
       DYNAMODB_TABLE    = var.dynamodb_table.name
@@ -58,4 +62,16 @@ resource "aws_lambda_function" "process_json_lambda" {
   }
 
   tags = var.tags
+}
+
+resource "null_resource" "replace_function" {
+  triggers = {
+    filehash = data.archive_file.process_json.output_base64sha256
+  }
+}
+
+resource "aws_cloudwatch_log_group" "lambda_log_group" {
+  name              = "/aws/lambda/${aws_lambda_function.process_json_lambda.function_name}"
+  retention_in_days = 14
+  tags              = var.tags
 }
