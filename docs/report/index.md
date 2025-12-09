@@ -253,3 +253,11 @@ This led me to updating the lambda function code to process the new object.  Aft
 
 `DynamoDB Table Result Screenshot:`
 <img src="./img/eventbridge-lambda-trigger-result.jpg" alt="eventbridge-result"/>
+
+In the previous explanation, I explained that there was an issue with testing unique values.  To fix this, I updated the `process_json.py` script to check if the ItemID already exists in the DynamoDB table before inserting a new item.  This was done by creating a new function `check_dynamodb_table` that utilizes the `get_item` method from the boto3 DynamoDB client.  If the item exists, the function returns True, indicating that the ItemID is a duplicate.
+
+`Lambda Duplicate ItemID Logs Screenshot`
+<img src="./img/lambda-duplicate-logs.jpg" alt="lambda-duplicate-logs"/>
+
+`Object Result Screenshot:`
+<img src="./img/quarantine-bucket-result.jpg" alt="quarantine-bucket-result"/>
