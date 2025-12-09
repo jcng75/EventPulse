@@ -261,3 +261,10 @@ In the previous explanation, I explained that there was an issue with testing un
 
 `Object Result Screenshot:`
 <img src="./img/quarantine-bucket-result.jpg" alt="quarantine-bucket-result"/>
+
+### SNS
+
+The next step of the project was to implement SNS notifications to alert users when an object succeeds or fails during the lambda processing.  To do this, I created an SNS topic using the [aws_sns_topic](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic) resource.  Additionally, I created an email subscription using the [aws_sns_topic_subscription](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic_subscription) resource.  The email address used for the subscription is defined in the `terraform.tfvars` file.  When running the applies, I received a confirmation email to subscribe to the topic.  
+
+`SNS Subscription Confirmation Screenshot:`
+<img src="./img/sns-subscription-confirmation.jpg" alt="sns-subscription-confirmation"/>
