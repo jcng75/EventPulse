@@ -56,8 +56,9 @@ resource "aws_lambda_function" "process_json_lambda" {
 
   environment {
     variables = {
-      DYNAMODB_TABLE    = var.dynamodb_table.name
-      QUARANTINE_BUCKET = var.quarantine_bucket.name
+      DYNAMODB_TABLE    = aws_dynamodb_table.table.name
+      QUARANTINE_BUCKET = aws_s3_bucket.quarantine_bucket.bucket
+      SNS_TOPIC_ARN     = aws_sns_topic.alerts_topic.arn
     }
   }
 
