@@ -1,0 +1,23 @@
+{
+  "ArtistID": {
+    "S": "Zedd"
+  },
+  "ItemID": {
+    "S": "TRACK#BEAUTIFUL_NOW"
+  },
+  "Duration": {
+    "N": "218"
+  },
+  "EntityType": {
+    "S": "Track"
+  },
+  "Streams": {
+    "N": "418000000"
+  },
+  "Title": {
+    "S": "BEAUTIFUL NOW"
+  },
+  "Year": {
+    "N": "2015"
+  }
+}

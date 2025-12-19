@@ -52,6 +52,14 @@ variable "process_json_lambda" {
   default     = {}
 }
 
+variable "sns_configuration" {
+  type = object({
+    name          = optional(string, "eventpulse_sns_alert_topic")
+    email_address = string
+  })
+  description = "Configuration for SNS topics"
+}
+
 variable "tags" {
   description = "A map of tags to add to all resources"
   type        = map(string)

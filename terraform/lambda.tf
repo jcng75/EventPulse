@@ -33,6 +33,11 @@ resource "aws_iam_role_policy_attachment" "s3_access" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
 }
 
+resource "aws_iam_role_policy_attachment" "sns_publish_access" {
+  role       = aws_iam_role.lambda_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSNSFullAccess"
+}
+
 # Package the Lambda function code
 data "archive_file" "process_json" {
   type        = "zip"
@@ -56,8 +61,9 @@ resource "aws_lambda_function" "process_json_lambda" {
 
   environment {
     variables = {
-      DYNAMODB_TABLE    = var.dynamodb_table.name
-      QUARANTINE_BUCKET = var.quarantine_bucket.name
+      DYNAMODB_TABLE    = aws_dynamodb_table.table.name
+      QUARANTINE_BUCKET = aws_s3_bucket.quarantine_bucket.bucket
+      SNS_TOPIC_ARN     = aws_sns_topic.alerts_topic.arn
     }
   }
 

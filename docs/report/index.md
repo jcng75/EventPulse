@@ -261,3 +261,28 @@ In the previous explanation, I explained that there was an issue with testing un
 
 `Object Result Screenshot:`
 <img src="./img/quarantine-bucket-result.jpg" alt="quarantine-bucket-result"/>
+
+### SNS
+
+The next step of the project was to implement SNS notifications to alert users when an object succeeds or fails during the lambda processing.  To do this, I created an SNS topic using the [aws_sns_topic](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic) resource.  Additionally, I created an email subscription using the [aws_sns_topic_subscription](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic_subscription) resource.  The email address used for the subscription is defined in the `terraform.tfvars` file.  When running the applies, I received a confirmation email to subscribe to the topic.  It should also be noted that the SNS topic policy allowed lambda functions to publish messages to the topic.  Based on the architecture, the lambda function would be responsible for sending notifications based on the processing outcome.
+
+`SNS Subscription Confirmation Screenshot:`
+<img src="./img/sns-subscription-confirmation.jpg" alt="sns-subscription-confirmation"/>
+
+The next step was to update the `process_json.py` script to send notifications to the SNS topic.  To do this, I created a new function `publish_sns_message` that utilizes the `publish` method from the boto3 SNS client.  The function takes in the SNS topic ARN, message, and subject as parameters.  Within the lambda handler, I added calls to this function at various points to send notifications based on the processing outcome (i.e., object already in quarantine, object invalid and moved to quarantine, object successfully uploaded).
+
+When testing the new functionality, I created the third object `third-test-object.json` and uploaded it to the S3 processing bucket.  Upon uploading, I saw the following error in the lambda logs:
+
+```
+[ERROR] AuthorizationErrorException: An error occurred (AuthorizationError) when calling the Publish operation: User: arn:aws:sts::xxxxxxxx:assumed-role/eventpulse_process_json_lambda_role/eventpulse_process_json_lambda_function is not authorized to perform: SNS:Publish on resource: arn:aws:sns:us-east-1:xxxxxxxx:eventpulse_sns_alert_topic because no identity-based policy allows the SNS:Publish action
+```
+
+When checking my terraform configurations, I realized that while I had granted permissions for lambda to publish to the SNS topic, I had not granted permissions to the lambda **role** itself.  To fix this, I created a new `aws_iam_role_policy_attachment` resource to attach the `AmazonSNSFullAccess` policy to the lambda role.  After running the applies, I re-uploaded the object to the S3 processing bucket.  Again, the policy will be revisited later to implement the principle of least privilege.
+
+After the lambda function executed, I received the following email notifications:
+
+`SNS Original Error Screenshot:`
+<img src="./img/sns-failed-email.jpg" alt="sns-failed-email"/>
+
+`SNS Notification Screenshot:`
+<img src="./img/sns-sucessful-email.jpg" alt="sns-sucessful-email"/>
