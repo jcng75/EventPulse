@@ -54,17 +54,21 @@ def validate_json_structure(json_object):
     }
     required_fields = ["ArtistID", "ItemID"]
 
+    errors = []
+
     is_valid_structure = True
 
     for field in required_fields:
         if field not in json_object:
             print(f"Missing required field: {field}")
+            errors.append(f"Missing required field: {field}")
             is_valid_structure = False
 
     for key, value in json_object.items():
         # Check if the key is valid in our JSON structure
         if key not in type_checks.keys():
             print(f"Field is not allowed in JSON structure: {key}")
+            errors.append(f"Field is not allowed in JSON structure: {key}")
             is_valid_structure = False
             continue
         # Check if the value is the correct type
@@ -73,6 +77,7 @@ def validate_json_structure(json_object):
         if type_checks[key] != value_to_check:
             print(f"Checking {key}: expected {type_checks[key]}, got {value_to_check}")
             print(f"Field {key} has incorrect type. Expected {type_checks[key]}, got {value_to_check}")
+            errors.append(f"Field {key} has incorrect type. Expected {type_checks[key]}, got {value_to_check}")
             is_valid_structure = False
 
     if is_valid_structure:
@@ -80,7 +85,7 @@ def validate_json_structure(json_object):
     else:
         print(f"JSON structure is invalid. - Acceptable fields are: {type_checks.keys()}")
 
-    return is_valid_structure
+    return (is_valid_structure, errors)
 
 def in_check_dynamodb_table(partition_key, item_id, table_name):
     print(f"Checking if ItemID {item_id} exists in DynamoDB table.")
@@ -135,14 +140,17 @@ def lambda_handler(event, context):
         return {"statusCode": 200, "body": "Object is already in quarantine."}
 
     json_object = get_s3_object(processing_bucket, s3_key)
-    is_valid = validate_json_structure(json_object) and not in_check_dynamodb_table(json_object["ArtistID"]["S"], json_object["ItemID"]["S"], dynamodb_table)
+    is_valid_json, errors = validate_json_structure(json_object)
+    in_dynamo_db  = in_check_dynamodb_table(json_object["ArtistID"]["S"], json_object["ItemID"]["S"], dynamodb_table)
+    is_valid = is_valid_json and not in_dynamo_db
 
     if not is_valid:
+        message = f"The object with key {s3_key} has invalid JSON structure or duplicate ItemID.\nErrors:\n" + "\n".join(errors)
         print("Invalid JSON structure or duplicate ItemID. Moving to quarantine.")
         move_to_quarantine(processing_bucket, quarantine_bucket, s3_key)
         publish_sns_message(
             sns_topic_arn,
-            f"The object with key {s3_key} is not valid.  It has been moved to the quarantine bucket.",
+            message,
             "EventPulse Object Invalid - Moved to Quarantine"
         )
         return
