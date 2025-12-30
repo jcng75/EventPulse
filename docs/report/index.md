@@ -291,7 +291,7 @@ After the lambda function executed, I received the following email notifications
 
 Based on the [Architectural Diagram](../architecture/index.md), authenticated users should be able to upload JSON objects directly to the S3 processing bucket.  To facilitate this, I created a new Python script `s3_upload.py` within the `scripts/s3_upload` directory.  This script utilizes the boto3 S3 client to upload a specified JSON file to the S3 processing bucket.  The reason for for creating this utility was to simulate user uploads without creating a web frontend.  If we were to create a web frontend, a static website could be hosted on S3 with a simple HTML form to upload files.  However, this would require additional configurations for authentication and security.
 
-For the script itself, in testing the Admin credentials were being used.
+While working on this utility, I had to update the architectural diagram to reflect that the S3 upload would be done via a Python script instead of a web frontend.  This change was made to simplify the implementation while still meeting the requirement of authenticated user uploads.  The user would still need to have valid AWS credentials to run the script, ensuring that only authenticated users can upload files to the S3 processing bucket.  That user would then be able to assume the necessary IAM role to gain access to the S3 bucket.  In a real world scenario, this could be done using AWS Cognito or another authentication service.
 
 Here were the results of the uploads:
 
@@ -309,3 +309,7 @@ Path upload_files/test.txt does produce a JSON file.
 python3 ./s3_upload.py upload_files/test-object.json
 Successfully uploaded upload_files/test-object.json to s3://eventpulse-processing-bucket/test-object.json
 ```
+
+### IAM
+
+For the script itself, in testing the Admin credentials were being used.  Now that the script is functioning as intended, IAM policies can be updated to enforce the principle of least privilege.
