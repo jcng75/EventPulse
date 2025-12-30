@@ -286,3 +286,26 @@ After the lambda function executed, I received the following email notifications
 
 `SNS Notification Screenshot:`
 <img src="./img/sns-sucessful-email.jpg" alt="sns-sucessful-email"/>
+
+### Python Utilities - S3 Upload
+
+Based on the [Architectural Diagram](../architecture/index.md), authenticated users should be able to upload JSON objects directly to the S3 processing bucket.  To facilitate this, I created a new Python script `s3_upload.py` within the `scripts/s3_upload` directory.  This script utilizes the boto3 S3 client to upload a specified JSON file to the S3 processing bucket.  The reason for for creating this utility was to simulate user uploads without creating a web frontend.  If we were to create a web frontend, a static website could be hosted on S3 with a simple HTML form to upload files.  However, this would require additional configurations for authentication and security.
+
+For the script itself, in testing the Admin credentials were being used.
+
+Here were the results of the uploads:
+
+```
+# Using file that doesn't exist
+python3 ./s3_upload.py upload_files/bogus.json
+File not found: upload_files/bogus.json
+Path upload_files/bogus.json does produce a JSON file.
+
+# Using file that exists but is not a JSON file
+python3 ./s3_upload.py upload_files/test.txt
+Path upload_files/test.txt does produce a JSON file.
+
+# Using valid JSON file
+python3 ./s3_upload.py upload_files/test-object.json
+Successfully uploaded upload_files/test-object.json to s3://eventpulse-processing-bucket/test-object.json
+```
