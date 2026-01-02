@@ -1,7 +1,20 @@
+### AWS Account Variables
+
 variable "account_id" {
   description = "The AWS account ID where resources will be created"
   type        = string
 }
+
+variable "tags" {
+  description = "A map of tags to add to all resources"
+  type        = map(string)
+  default = {
+    Orchestration = "Terraform"
+    Project       = "EventPulse"
+  }
+}
+
+### S3 Bucket Variables
 
 variable "processing_bucket" {
   type = object({
@@ -33,6 +46,8 @@ variable "quarantine_bucket" {
   }
 }
 
+### DynamoDB Variables
+
 variable "dynamodb_table" {
   type = object({
     name      = optional(string, "event-pulse-table")
@@ -41,6 +56,8 @@ variable "dynamodb_table" {
   })
   description = "Configuration for the DynamoDB table"
 }
+
+### Lambda Variables
 
 variable "process_json_lambda" {
   type = object({
@@ -52,6 +69,8 @@ variable "process_json_lambda" {
   default     = {}
 }
 
+### SNS Variables
+
 variable "sns_configuration" {
   type = object({
     name          = optional(string, "eventpulse_sns_alert_topic")
@@ -60,11 +79,13 @@ variable "sns_configuration" {
   description = "Configuration for SNS topics"
 }
 
-variable "tags" {
-  description = "A map of tags to add to all resources"
-  type        = map(string)
-  default = {
-    Orchestration = "Terraform"
-    Project       = "EventPulse"
-  }
+### IAM Variables
+
+variable "iam_authenticated_user_configuration" {
+  description = "The configuration of the authenticated IAM user"
+  type = object({
+    user_name   = string
+    role_name   = optional(string, "eventpulse_authenticated_user_role")
+    policy_name = optional(string, "eventpulse_authenticated_user_policy")
+  })
 }
