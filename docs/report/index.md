@@ -313,3 +313,7 @@ Successfully uploaded upload_files/test-object.json to s3://eventpulse-processin
 ### IAM
 
 For the script itself, in testing the Admin credentials were being used.  Now that the script is functioning as intended, IAM policies can be updated to enforce the principle of least privilege.
+
+To start, I created an IAM user for the authenticated user using the [aws_iam_user](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_user) resource.  The user name is defined in the `terraform.tfvars` file.  Next, I created an IAM policy using the [aws_iam_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) resource.  This policy grants the necessary permissions for the user to upload files to the S3 processing bucket.  The policy document is defined using the [aws_iam_policy_document](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) data source.
+
+Finally, I attached the policy to the user using the [aws_iam_user_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_user_policy_attachment) resource.  After running the applies, I verified that the user was created successfully in the AWS Management Console and that the policy was attached correctly.
