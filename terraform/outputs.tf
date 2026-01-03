@@ -9,3 +9,8 @@ output "processing_bucket_name" {
   description = "Name of the S3 processing bucket"
   value       = aws_s3_bucket.processing_bucket.bucket
 }
+
+output "quarantine_bucket_name" {
+  description = "Name of the S3 quarantine bucket"
+  value       = aws_s3_bucket.quarantine_bucket.bucket
+}
