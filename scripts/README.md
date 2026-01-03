@@ -9,6 +9,9 @@ pip install -r requirements.txt
 ```
 
 ## S3 Upload Utility
+This utility script uploads files to an S3 bucket using specified IAM role credentials.  Ensure that the configuration within the script is updated with the correct bucket name and IAM role ARN before running.
+
+### Usage
 ```python
 python3 -m utilities.s3_upload.s3_upload utilities/s3_upload/upload_files/<file_name>.json
 ```

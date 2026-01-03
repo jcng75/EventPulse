@@ -5,8 +5,8 @@ The script will be a command line utility that can be used like so:
 """
 
 import sys
-from utilities.reusable.sts_get_credentials import get_credentials
-from utilities.reusable.s3_reusable import get_s3_client
+from ..reusable.sts_get_credentials import get_credentials
+from ..reusable.s3_reusable import get_s3_client
 
 def upload_json_to_s3(s3, bucket_name, file_path):
     # Get the file name from the file path (e.g "path/to/file.json" -> "file.json")
@@ -28,6 +28,7 @@ def file_exists(file_path):
 def main():
     # Configurations - Run `terraform output` to get the configurations
     bucket_name = "eventpulse-processing-bucket" # Replace with your bucket name
+    iam_role = "arn:aws:iam::1234567891012:role/eventpulse_authenticated_user_role" # Replace with your IAM role ARN
 
     file_path = sys.argv[1]
 
