@@ -1,0 +1,23 @@
+{
+  "ArtistID": {
+    "S": "Porter Robinson"
+  },
+  "ItemID": {
+    "S": "TRACK#CHEERLEADER"
+  },
+  "Duration": {
+    "N": "240"
+  },
+  "EntityType": {
+    "S": "Track"
+  },
+  "Streams": {
+    "N": "25000000"
+  },
+  "Title": {
+    "S": "Cheerleader"
+  },
+  "Year": {
+    "N": "2024"
+  }
+}

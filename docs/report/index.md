@@ -286,3 +286,47 @@ After the lambda function executed, I received the following email notifications
 
 `SNS Notification Screenshot:`
 <img src="./img/sns-sucessful-email.jpg" alt="sns-sucessful-email"/>
+
+### Python Utilities - S3 Upload
+
+Based on the [Architectural Diagram](../architecture/index.md), authenticated users should be able to upload JSON objects directly to the S3 processing bucket.  To facilitate this, I created a new Python script `s3_upload.py` within the `scripts/s3_upload` directory.  This script utilizes the boto3 S3 client to upload a specified JSON file to the S3 processing bucket.  The reason for for creating this utility was to simulate user uploads without creating a web frontend.  If we were to create a web frontend, a static website could be hosted on S3 with a simple HTML form to upload files.  However, this would require additional configurations for authentication and security.
+
+While working on this utility, I had to update the architectural diagram to reflect that the S3 upload would be done via a Python script instead of a web frontend.  This change was made to simplify the implementation while still meeting the requirement of authenticated user uploads.  The user would still need to have valid AWS credentials to run the script, ensuring that only authenticated users can upload files to the S3 processing bucket.  That user would then be able to assume the necessary IAM role to gain access to the S3 bucket.  In a real world scenario, this could be done using AWS Cognito or another authentication service.
+
+Here were the results of the uploads:
+
+```
+# Using file that doesn't exist
+python3 ./s3_upload.py upload_files/bogus.json
+File not found: upload_files/bogus.json
+Path upload_files/bogus.json does produce a JSON file.
+
+# Using file that exists but is not a JSON file
+python3 ./s3_upload.py upload_files/test.txt
+Path upload_files/test.txt does produce a JSON file.
+
+# Using valid JSON file
+python3 ./s3_upload.py upload_files/test-object.json
+Successfully uploaded upload_files/test-object.json to s3://eventpulse-processing-bucket/test-object.json
+```
+
+### IAM - Assumed Role Terraform Standup
+
+For the script itself, in testing the Admin credentials were being used.  Now that the script is functioning as intended, IAM policies can be updated to enforce the principle of least privilege.
+
+To start, I created an IAM user for the authenticated user using the [aws_iam_user](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_user) resource.  The user name is defined in the `terraform.tfvars` file.  Next, I created an IAM policy using the [aws_iam_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) resource.  This policy grants the necessary permissions for the user to upload files to the S3 processing bucket.  The policy document is defined using the [aws_iam_policy_document](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) data source.
+
+Finally, I attached the policy to the user using the [aws_iam_user_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_user_policy_attachment) resource.  After running the applies, I verified that the user was created successfully in the AWS Management Console and that the policy was attached correctly.
+
+### Python - IAM Improvements
+
+The next step was to update the `s3_upload.py` script to use the new IAM role credentials.  To do this, I updated the script to assume the IAM role using the [assume_role](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sts.html#STS.Client.assume_role) method from the boto3 STS client.  As I was deveoping the script, I realized that the code being used would be reusable for future utilities.  As a result, I created a new sub-directory `utilities` within the `scripts` directory.  From there, I created a new sub-directory `s3_upload` to house the `s3_upload.py` script.  This structure allows for easy organization and future expansion of utility scripts.
+
+When testing the updated script, I noticed that I received an error due to stating the Module could not be found.  This was due to my misunderstanding of how Python handles module imports.  After doing more research, I realized that the `s3_upload.py` script couldn't be run directly if it was importing from a parent directory.  This could be circumvented by treating each directory as a module.  To do this, I added an empty `__init__.py` file in each directory within the path.  This allows Python to recognize the directories as modules and resolve the imports correctly.  After doing so, I ran the script again and it functioned as intended.
+
+Sucessful Upload Output:
+```
+Successfully uploaded utilities/s3_upload/upload_files/pr_cheerleader.json to s3://eventpulse-processing-bucket/pr_cheerleader.json
+```
+
+To ensure that this was documented, I updated the [README.md](../../scripts/README.md) file to include instructions on how to use the `s3_upload.py` script.  This includes information on the required parameters, how to set up the environment, and examples of usage.
