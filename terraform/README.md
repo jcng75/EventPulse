@@ -74,5 +74,8 @@ No modules.
 
 ## Outputs
 
-No outputs.
+| Name | Description |
+|------|-------------|
+| <a name="output_authenticated_user_role_arn"></a> [authenticated\_user\_role\_arn](#output\_authenticated\_user\_role\_arn) | ARN of the IAM role for authenticated user to assume |
+| <a name="output_processing_bucket_name"></a> [processing\_bucket\_name](#output\_processing\_bucket\_name) | Name of the S3 processing bucket |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

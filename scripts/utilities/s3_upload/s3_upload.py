@@ -26,9 +26,9 @@ def file_exists(file_path):
         return False
 
 def main():
-    # Configurations
+    # Configurations - Run `terraform output` to get the configurations
     bucket_name = "eventpulse-processing-bucket" # Replace with your bucket name
-    iam_role = "eventpulse_authenticated_user_role"  # Replace with your IAM role name - Should match var.iam_authenticated_user_configuration.role_name
+
     file_path = sys.argv[1]
 
     if file_path is None:
@@ -47,7 +47,7 @@ def main():
 
     s3_client = get_s3_client(credentials)
 
-    upload_json_to_s3(s3_client, bucket_name, credentials, file_path)
+    upload_json_to_s3(s3_client, bucket_name, file_path)
 
 if __name__ == "__main__":
     main()
