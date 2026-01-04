@@ -15,14 +15,14 @@ resource "aws_cloudwatch_event_rule" "s3_put_object_rule" {
 resource "aws_cloudwatch_event_target" "invoke_lambda" {
   rule      = aws_cloudwatch_event_rule.s3_put_object_rule.name
   target_id = "event-pulse-invoke-lambda-target"
-  arn       = aws_lambda_function.process_json_lambda.arn
+  arn       = module.process_lambda.lambda_arn
   role_arn  = aws_iam_role.eventbridge_invoke_lambda_role.arn
 }
 
 resource "aws_lambda_permission" "allow_eventbridge" {
   statement_id  = "AllowExecutionFromEventBridge"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.process_json_lambda.function_name
+  function_name = module.process_lambda.lambda_name
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.s3_put_object_rule.arn
 }
@@ -57,7 +57,7 @@ data "aws_iam_policy_document" "eventbridge_invoke_lambda_role_policy" {
     ]
 
     resources = [
-      aws_lambda_function.process_json_lambda.arn
+      module.process_lambda.lambda_arn
     ]
   }
 }

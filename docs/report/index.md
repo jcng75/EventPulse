@@ -318,7 +318,7 @@ To start, I created an IAM user for the authenticated user using the [aws_iam_us
 
 Finally, I attached the policy to the user using the [aws_iam_user_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_user_policy_attachment) resource.  After running the applies, I verified that the user was created successfully in the AWS Management Console and that the policy was attached correctly.
 
-### Python - IAM Improvements
+## Python - IAM Improvements
 
 The next step was to update the `s3_upload.py` script to use the new IAM role credentials.  To do this, I updated the script to assume the IAM role using the [assume_role](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sts.html#STS.Client.assume_role) method from the boto3 STS client.  As I was deveoping the script, I realized that the code being used would be reusable for future utilities.  As a result, I created a new sub-directory `utilities` within the `scripts` directory.  From there, I created a new sub-directory `s3_upload` to house the `s3_upload.py` script.  This structure allows for easy organization and future expansion of utility scripts.
 
@@ -360,3 +360,9 @@ Failed Object Check (post removal):
 python3 -m utilities.s3_quarantine_tool.s3_quarantine_tool check test-object.json
 Object test-object.json does not exist in bucket eventpulse-quarantine-bucket.
 ```
+
+## Terraform - API Gateway Component
+
+### API Gateway Lambda
+
+The final part of this project was to implement an API Gateway to allow users to interact with a lambda that queries the DynamoDB table.  To start, the Lambda function needed to be created.  This function would follow a similar structure to the previous lambda function.  As a result, the `lambda.tf` code was taken and put into a `modules/lambda` directory.

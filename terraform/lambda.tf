@@ -1,3 +1,5 @@
+## Process JSON Lambda Function
+
 # IAM role for Lambda execution
 data "aws_iam_policy_document" "assume_role" {
   statement {
@@ -38,46 +40,23 @@ resource "aws_iam_role_policy_attachment" "sns_publish_access" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSNSFullAccess"
 }
 
-# Package the Lambda function code
-data "archive_file" "process_json" {
-  type        = "zip"
-  source_file = "${path.module}/../scripts/process_json/process_json.py"
-  output_path = "${path.module}/lambda/process_json.zip"
-}
+module "process_lambda" {
+  source = "./modules/lambda"
 
-# Lambda function
-resource "aws_lambda_function" "process_json_lambda" {
-  filename         = data.archive_file.process_json.output_path
-  function_name    = var.process_json_lambda.function_name
-  role             = aws_iam_role.lambda_role.arn
-  handler          = "process_json.lambda_handler"
-  source_code_hash = data.archive_file.process_json.output_base64sha256
-
-  runtime = var.process_json_lambda.runtime
-
-  lifecycle {
-    replace_triggered_by = [null_resource.replace_function]
+  iam_role             = aws_iam_role.lambda_role.arn
+  lambda_handler       = "process_json.lambda_handler"
+  lambda_runtime       = var.process_json_lambda.runtime
+  lambda_function_name = var.process_json_lambda.function_name
+  archive_file_configuration = {
+    source_file = "${path.module}/../scripts/process_json/process_json.py"
+    output_path = "${path.module}/lambda/process_json.zip"
   }
-
-  environment {
-    variables = {
-      DYNAMODB_TABLE    = aws_dynamodb_table.table.name
-      QUARANTINE_BUCKET = aws_s3_bucket.quarantine_bucket.bucket
-      SNS_TOPIC_ARN     = aws_sns_topic.alerts_topic.arn
-    }
+  environment_variables = {
+    DYNAMODB_TABLE    = aws_dynamodb_table.table.name
+    QUARANTINE_BUCKET = aws_s3_bucket.quarantine_bucket.bucket
+    SNS_TOPIC_ARN     = aws_sns_topic.alerts_topic.arn
   }
-
   tags = var.tags
 }
 
-resource "null_resource" "replace_function" {
-  triggers = {
-    filehash = data.archive_file.process_json.output_base64sha256
-  }
-}
-
-resource "aws_cloudwatch_log_group" "lambda_log_group" {
-  name              = "/aws/lambda/${aws_lambda_function.process_json_lambda.function_name}"
-  retention_in_days = 14
-  tags              = var.tags
-}
+## API Gateway Lambda Function
