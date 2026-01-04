@@ -366,3 +366,37 @@ Object test-object.json does not exist in bucket eventpulse-quarantine-bucket.
 ### API Gateway Lambda
 
 The final part of this project was to implement an API Gateway to allow users to interact with a lambda that queries the DynamoDB table.  To start, the Lambda function needed to be created.  This function would follow a similar structure to the previous lambda function.  As a result, the `lambda.tf` code was taken and put into a `modules/lambda` directory.
+
+When looking at the other terraform files that referenced the lambda function, I realized that an outputs.tf file was needed to export necessary attributes.  Because of that, the lambda ARN name and function were exported as outputs.
+
+After making the configurations, the `lambda.tf` file was updated to use the module "process_lambda" which referenced the source `modules/lambda`.  To migrate the existing resources to the new module, a `moved.tf` file was created with the following content:
+
+```
+moved {
+  from = data.archive_file.process_json
+  to   = module.process_lambda.data.archive_file.archive
+}
+
+moved {
+  from = aws_lambda_function.process_json_lambda
+  to   = module.process_lambda.aws_lambda_function.function
+}
+
+moved {
+  from = aws_cloudwatch_log_group.lambda_log_group
+  to   = module.process_lambda.aws_cloudwatch_log_group.lambda_log_group
+}
+
+moved {
+  from = null_resource.replace_function
+  to   = module.process_lambda.null_resource.replace_function
+}
+```
+
+The apply was successful as the results were shown below:
+
+```
+Apply complete! Resources: 0 added, 0 changed, 0 destroyed.
+```
+
+Once the apply was done, the moved.tf file was deleted as it was no longer needed.
