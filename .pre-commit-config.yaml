@@ -38,6 +38,6 @@ repos:
       args:
       - --hook-config=--path-to-file=README.md        # Valid UNIX path. I.e. ../TFDOC.md or docs/README.md etc.
       - --hook-config=--add-to-existing-file=true     # Boolean. true or false
-      - --hook-config=--create-file-if-not-exist=true
+      - --hook-config=--create-file-if-not-exist=false
     - id: terraform_tflint
     - id: terraform_validate

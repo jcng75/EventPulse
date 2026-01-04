@@ -1,5 +1,6 @@
-# IAM role for Lambda execution
-data "aws_iam_policy_document" "assume_role" {
+## Process JSON Lambda Function
+
+data "aws_iam_policy_document" "process_lambda_assume_role" {
   statement {
     effect = "Allow"
 
@@ -12,72 +13,101 @@ data "aws_iam_policy_document" "assume_role" {
   }
 }
 
-resource "aws_iam_role" "lambda_role" {
+resource "aws_iam_role" "process_lambda_role" {
   name               = var.process_json_lambda.role_name
-  assume_role_policy = data.aws_iam_policy_document.assume_role.json
+  assume_role_policy = data.aws_iam_policy_document.process_lambda_assume_role.json
   tags               = var.tags
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
-  role       = aws_iam_role.lambda_role.name
+resource "aws_iam_role_policy_attachment" "process_lambda_basic_execution" {
+  role       = aws_iam_role.process_lambda_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-resource "aws_iam_role_policy_attachment" "dynamodb_access" {
-  role       = aws_iam_role.lambda_role.name
+resource "aws_iam_role_policy_attachment" "process_lambda_dynamodb_access" {
+  role       = aws_iam_role.process_lambda_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
 }
 
-resource "aws_iam_role_policy_attachment" "s3_access" {
-  role       = aws_iam_role.lambda_role.name
+resource "aws_iam_role_policy_attachment" "process_lambda_s3_access" {
+  role       = aws_iam_role.process_lambda_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
 }
 
-resource "aws_iam_role_policy_attachment" "sns_publish_access" {
-  role       = aws_iam_role.lambda_role.name
+resource "aws_iam_role_policy_attachment" "process_lambda_sns_publish_access" {
+  role       = aws_iam_role.process_lambda_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSNSFullAccess"
 }
 
-# Package the Lambda function code
-data "archive_file" "process_json" {
-  type        = "zip"
-  source_file = "${path.module}/../scripts/process_json/process_json.py"
-  output_path = "${path.module}/lambda/process_json.zip"
-}
+module "process_lambda" {
+  source = "./modules/lambda"
 
-# Lambda function
-resource "aws_lambda_function" "process_json_lambda" {
-  filename         = data.archive_file.process_json.output_path
-  function_name    = var.process_json_lambda.function_name
-  role             = aws_iam_role.lambda_role.arn
-  handler          = "process_json.lambda_handler"
-  source_code_hash = data.archive_file.process_json.output_base64sha256
-
-  runtime = var.process_json_lambda.runtime
-
-  lifecycle {
-    replace_triggered_by = [null_resource.replace_function]
+  iam_role             = aws_iam_role.process_lambda_role.arn
+  lambda_handler       = "process_json.lambda_handler"
+  lambda_runtime       = var.process_json_lambda.runtime
+  lambda_function_name = var.process_json_lambda.function_name
+  archive_file_configuration = {
+    source_file = "${path.module}/../scripts/process_json/process_json.py"
+    output_path = "${path.module}/lambda/process_json.zip"
   }
-
-  environment {
-    variables = {
-      DYNAMODB_TABLE    = aws_dynamodb_table.table.name
-      QUARANTINE_BUCKET = aws_s3_bucket.quarantine_bucket.bucket
-      SNS_TOPIC_ARN     = aws_sns_topic.alerts_topic.arn
-    }
+  environment_variables = {
+    DYNAMODB_TABLE    = aws_dynamodb_table.table.name
+    QUARANTINE_BUCKET = aws_s3_bucket.quarantine_bucket.bucket
+    SNS_TOPIC_ARN     = aws_sns_topic.alerts_topic.arn
   }
-
   tags = var.tags
 }
 
-resource "null_resource" "replace_function" {
-  triggers = {
-    filehash = data.archive_file.process_json.output_base64sha256
+## API Gateway Lambda Function
+
+data "aws_iam_policy_document" "api_lambda_assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
   }
 }
 
-resource "aws_cloudwatch_log_group" "lambda_log_group" {
-  name              = "/aws/lambda/${aws_lambda_function.process_json_lambda.function_name}"
-  retention_in_days = 14
-  tags              = var.tags
+resource "aws_iam_role" "api_lambda_role" {
+  name               = var.api_gw_lambda.role_name
+  assume_role_policy = data.aws_iam_policy_document.api_lambda_assume_role.json
+  tags               = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "api_lambda_basic_execution" {
+  role       = aws_iam_role.api_lambda_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy_attachment" "api_lambda_dynamodb_access" {
+  role       = aws_iam_role.api_lambda_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "api_lambda_sns_publish_access" {
+  role       = aws_iam_role.api_lambda_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSNSFullAccess"
+}
+
+module "api_lambda" {
+  source = "./modules/lambda"
+
+  iam_role             = aws_iam_role.api_lambda_role.arn
+  lambda_handler       = "api_gw.lambda_handler"
+  lambda_runtime       = var.api_gw_lambda.runtime
+  lambda_function_name = var.api_gw_lambda.function_name
+  archive_file_configuration = {
+    source_file = "${path.module}/../scripts/api_gw/api_gw.py"
+    output_path = "${path.module}/lambda/api_gw.zip"
+  }
+  environment_variables = {
+    DYNAMODB_TABLE = aws_dynamodb_table.table.name
+    SNS_TOPIC_ARN  = aws_sns_topic.alerts_topic.arn
+  }
+  tags = var.tags
 }

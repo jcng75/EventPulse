@@ -69,6 +69,16 @@ variable "process_json_lambda" {
   default     = {}
 }
 
+variable "api_gw_lambda" {
+  type = object({
+    function_name = optional(string, "eventpulse_api_gw_lambda_function")
+    role_name     = optional(string, "eventpulse_api_gw_lambda_function")
+    runtime       = optional(string, "python3.12")
+  })
+  description = "Configuration for the API Gateway Lambda function"
+  default     = {}
+}
+
 ### SNS Variables
 
 variable "sns_configuration" {
