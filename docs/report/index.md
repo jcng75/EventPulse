@@ -400,3 +400,5 @@ Apply complete! Resources: 0 added, 0 changed, 0 destroyed.
 ```
 
 Once the apply was done, the moved.tf file was deleted as it was no longer needed.
+
+The next step was to create the new lambda function that would handle API Gateway requests.  A new directory `scripts/api_gw` was created to house the `api_gw.py` script.  This script would be responsible for querying the DynamoDB table based on the artist ID provided in the API request.  After running the apply for the new lambda function, I verified that it was created successfully in the AWS Management Console.  The IAM permissions will be adjusted later to implement the principle of least privilege as well as determining what is needed for the API Gateway to function properly.
