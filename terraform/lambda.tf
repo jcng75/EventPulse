@@ -1,7 +1,7 @@
 ## Process JSON Lambda Function
 
 # IAM role for Lambda execution
-data "aws_iam_policy_document" "assume_role" {
+data "aws_iam_policy_document" "process_lambda_assume_role" {
   statement {
     effect = "Allow"
 
@@ -14,36 +14,36 @@ data "aws_iam_policy_document" "assume_role" {
   }
 }
 
-resource "aws_iam_role" "lambda_role" {
+resource "aws_iam_role" "process_lambda_role" {
   name               = var.process_json_lambda.role_name
-  assume_role_policy = data.aws_iam_policy_document.assume_role.json
+  assume_role_policy = data.aws_iam_policy_document.process_lambda_assume_role.json
   tags               = var.tags
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
-  role       = aws_iam_role.lambda_role.name
+resource "aws_iam_role_policy_attachment" "process_lambda_basic_execution" {
+  role       = aws_iam_role.process_lambda_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-resource "aws_iam_role_policy_attachment" "dynamodb_access" {
-  role       = aws_iam_role.lambda_role.name
+resource "aws_iam_role_policy_attachment" "process_lambda_dynamodb_access" {
+  role       = aws_iam_role.process_lambda_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
 }
 
-resource "aws_iam_role_policy_attachment" "s3_access" {
-  role       = aws_iam_role.lambda_role.name
+resource "aws_iam_role_policy_attachment" "process_lambda_s3_access" {
+  role       = aws_iam_role.process_lambda_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
 }
 
-resource "aws_iam_role_policy_attachment" "sns_publish_access" {
-  role       = aws_iam_role.lambda_role.name
+resource "aws_iam_role_policy_attachment" "process_lambda_sns_publish_access" {
+  role       = aws_iam_role.process_lambda_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSNSFullAccess"
 }
 
 module "process_lambda" {
   source = "./modules/lambda"
 
-  iam_role             = aws_iam_role.lambda_role.arn
+  iam_role             = aws_iam_role.process_lambda_role.arn
   lambda_handler       = "process_json.lambda_handler"
   lambda_runtime       = var.process_json_lambda.runtime
   lambda_function_name = var.process_json_lambda.function_name
