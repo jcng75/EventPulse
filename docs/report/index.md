@@ -330,3 +330,33 @@ Successfully uploaded utilities/s3_upload/upload_files/pr_cheerleader.json to s3
 ```
 
 To ensure that this was documented, I updated the [README.md](../../scripts/README.md) file to include instructions on how to use the `s3_upload.py` script.  This includes information on the required parameters, how to set up the environment, and examples of usage.
+
+### Python Utilities - S3 Quarantine Tool
+The next utility script that I worked on was the S3 Quarantine Tool.  This script is designed to manage quarantined objects in the S3 quarantine bucket.  The script supports commands to list and delete quarantined objects.  Similar to the S3 Upload utility, this script assumes an IAM role to gain access to the S3 bucket.
+
+A similar process was taken when creating the `s3_quarantine_tool.py` script.  The directory was created under `utilities/`, and the file was used as a module.  The terraform outputs file needed to then be updated to include the quarantine bucket ARN.  Using that information, the script's configuration section was updated to include the quarantine bucket and IAM role ARN that was assumed.
+
+When writing the functions, I learned more about boto3 exception handling.  The `head_object` method raises a `ClientError` exception if the object doesn't exist.  I noted that the error code was "404" after running the script.  After adding a check for this exception, the script was able to handle non-existent objects gracefully.
+
+The remove_quarantined_object function was implemented using the check_quarantined_object function to verify the object's existence before attempting deletion.  If the object exists, the `delete_object` method from the boto3 S3 client is used to remove it from the quarantine bucket.  A guardrail was added to ensure the user confirms the deletion before proceeding.
+
+When testing the script, I didn't run into any issues with the boto3 commands.
+
+Successful Object Check:
+```
+python3 -m utilities.s3_quarantine_tool.s3_quarantine_tool check test-object.json
+Object test-object.json exists in bucket eventpulse-quarantine-bucket.
+```
+
+Successful Object Deletion:
+```
+python3 -m utilities.s3_quarantine_tool.s3_quarantine_tool check test-object.json
+Are you sure you want to remove object test-object.json from bucket eventpulse-quarantine-bucket? (yes/no): yes
+Successfully removed object test-object.json from bucket eventpulse-quarantine-bucket.
+```
+
+Failed Object Check (post removal):
+```
+python3 -m utilities.s3_quarantine_tool.s3_quarantine_tool check test-object.json
+Object test-object.json does not exist in bucket eventpulse-quarantine-bucket.
+```
