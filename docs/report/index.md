@@ -402,3 +402,16 @@ Apply complete! Resources: 0 added, 0 changed, 0 destroyed.
 Once the apply was done, the moved.tf file was deleted as it was no longer needed.
 
 The next step was to create the new lambda function that would handle API Gateway requests.  A new directory `scripts/api_gw` was created to house the `api_gw.py` script.  This script would be responsible for querying the DynamoDB table based on the artist ID provided in the API request.  After running the apply for the new lambda function, I verified that it was created successfully in the AWS Management Console.  The IAM permissions will be adjusted later to implement the principle of least privilege as well as determining what is needed for the API Gateway to function properly.
+
+### Python - API Gateway Lambda
+
+Once the Lambda was scafolded, I began working on the Python script.  The main objective of this script was to take in the following parameters:
+- ArtistID
+- ItemID (optional)
+Based on the provided parameters, the script would query the DynamoDB table and return the corresponding item(s).  If only the ArtistID was provided, all items for that artist would be returned.  If both ArtistID and ItemID were provided, only the specific item would be returned.
+
+I wanted to start by testing the script locally without inclusion of API Gateway integrations, as the infrastructure has not been created yet.  To do this, I wrote the script focusing on the query logic.
+
+To understand how to query the DynamoDB table, I referenced the following documentation:
+- [AWS Documentation](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/programming-with-python.html)
+- [Boto3 Documentation](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb/client/query.html)
