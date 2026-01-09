@@ -408,7 +408,7 @@ The next step was to create the new lambda function that would handle API Gatewa
 Once the Lambda was scafolded, I began working on the Python script.  The main objective of this script was to take in the following parameters:
 - ArtistID
 - ItemID (optional)
--Attributes to return (optional)
+- Attributes to return (optional)
 Based on the provided parameters, the script would query the DynamoDB table and return the corresponding item(s).  If only the ArtistID was provided, all items for that artist would be returned.  If both ArtistID and ItemID were provided, only the specific item would be returned.
 
 I wanted to start by testing the script locally without inclusion of API Gateway integrations, as the infrastructure has not been created yet.  To do this, I wrote the script focusing on the query logic.
