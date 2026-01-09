@@ -408,6 +408,7 @@ The next step was to create the new lambda function that would handle API Gatewa
 Once the Lambda was scafolded, I began working on the Python script.  The main objective of this script was to take in the following parameters:
 - ArtistID
 - ItemID (optional)
+-Attributes to return (optional)
 Based on the provided parameters, the script would query the DynamoDB table and return the corresponding item(s).  If only the ArtistID was provided, all items for that artist would be returned.  If both ArtistID and ItemID were provided, only the specific item would be returned.
 
 I wanted to start by testing the script locally without inclusion of API Gateway integrations, as the infrastructure has not been created yet.  To do this, I wrote the script focusing on the query logic.
@@ -415,3 +416,5 @@ I wanted to start by testing the script locally without inclusion of API Gateway
 To understand how to query the DynamoDB table, I referenced the following documentation:
 - [AWS Documentation](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/programming-with-python.html)
 - [Boto3 Documentation](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb/client/query.html)
+
+When writing the query logic, I found that the `query` method from the boto3 DynamoDB client was used to retrieve items based on the provided keys.  The `KeyConditionExpression` parameter was utilized to specify the conditions for the query.  If only the ArtistID was provided, the expression would be `ArtistID = :artist_id`.  If both ArtistID and ItemID were provided, the expression would be `ArtistID = :artist_id AND ItemID = :item_id`.  After getting the response, the items are then filtered based on the requested attributes, if any.
