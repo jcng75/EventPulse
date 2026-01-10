@@ -15,7 +15,7 @@ output "quarantine_bucket_name" {
   value       = aws_s3_bucket.quarantine_bucket.bucket
 }
 
-output "api_lambda_invoke_url" {
-  description = "Invoke URL of the API Gateway Lambda function"
-  value       = module.api_lambda.invoke_url
+output "api_invoke_url" {
+  description = "The API invoke URL"
+  value       = aws_apigatewayv2_api.lambda.api_endpoint
 }
