@@ -430,3 +430,36 @@ When developing the terraform configurations for API Gateway, I found that it wa
 - `aws_lambda_permission`: This resource grants permission for the API
 
 Note: Currently the configuration has no authentication.  This will be revisited later to implement tighter security measures.
+
+In order to test the API Gateway, I used [Postman](https://www.postman.com/) to send HTTP requests to the API endpoint.  As I was not familiar with making API Gateway requests, I had to do some research cross referencing Copilot suggestions with documentation. For documentation sake, the API Gateway endpoint follows this structure:
+```
+https://{api_id}.execute-api.{region}.amazonaws.com/{stage_name}/{resource_path}
+```
+At this point, I realized that "v1" would be a better stage name than "default" for versioning purposes.  Additionally, since there is only one resource path, I decided to keep it as "items" within the Terraform outputs.  As a result, I updated the `variables.tf` and `outputs.tf` files accordingly.
+
+In initial testing, I encountered a few issues with the API Gateway requests.  The first issue was with the request URL.  I initially did not include the stage name in the URL, which resulted in a 404 error.  After adding the stage name, the request was able to reach the API Gateway, but I received a 500 error instead.  Looking at the CloudWatch logs, I saw the following:
+
+```
+{"httpMethod":"GET","integrationErrorMessage":"The response from the Lambda function doesn't match the format that API Gateway expects. Lambda body contains the wrong type for field "body"","protocol":"HTTP/1.1","requestId":"XCkJ3h1FIAMEMEw=","requestTime":"11/Jan/2026:21:46:38 +0000","resourcePath":"-","responseLength":"35","routeKey":"GET /items","sourceIp":"54.86.50.139","status":"500"}
+```
+
+This identified that the API gateway was connected to the integration, but the lambda function wasn't returning the expected format.  After doing some research, I found that the lambda function needed to return a specific JSON structure for API Gateway to process the response correctly.  The structure is as follows:
+
+```
+{
+  "statusCode": 200,
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": "<stringified JSON body>"
+}
+```
+
+Headers are optional but recommended to specify the content type.  The body must be a string, so the JSON object needs to be stringified using `json.dumps()` in Python.
+
+Once doing that, I was able to get successful responses from the API Gateway.  Here are some examples of requests and their corresponding responses:
+**Request 1: Get Specific Attributes from an Artist ID**
+<img src="./img/postman-success-response.jpg" alt="postman-success-response"/>
+
+**Request 2: Invalid Artist ID**
+<img src="./img/postman-invalid-artist-lookup.jpg" alt="postman-invalid-artist-lookup"/>
