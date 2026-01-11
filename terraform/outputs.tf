@@ -16,6 +16,6 @@ output "quarantine_bucket_name" {
 }
 
 output "api_invoke_url" {
-  description = "The API invoke URL"
-  value       = aws_apigatewayv2_api.lambda.api_endpoint
+  description = "The API invoke URL for the API Gateway"
+  value       = "${aws_apigatewayv2_stage.lambda.invoke_url}/items"
 }

@@ -1,6 +1,7 @@
 resource "aws_apigatewayv2_api" "lambda" {
   name          = var.api_gateway_configuration.api_gw_name
   protocol_type = "HTTP"
+  tags          = var.tags
 }
 
 resource "aws_apigatewayv2_stage" "lambda" {
@@ -27,6 +28,8 @@ resource "aws_apigatewayv2_stage" "lambda" {
       }
     )
   }
+
+  tags = var.tags
 }
 
 resource "aws_apigatewayv2_integration" "lambda" {
@@ -48,6 +51,7 @@ resource "aws_cloudwatch_log_group" "api_gw" {
   name = "/aws/api_gw/${aws_apigatewayv2_api.lambda.name}"
 
   retention_in_days = 14
+  tags              = var.tags
 }
 
 # Allow API Gateway to invoke the Lambda function

@@ -72,7 +72,7 @@
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_account_id"></a> [account\_id](#input\_account\_id) | The AWS account ID where resources will be created | `string` | n/a | yes |
-| <a name="input_api_gateway_configuration"></a> [api\_gateway\_configuration](#input\_api\_gateway\_configuration) | Configuration for the API Gateway | <pre>object({<br/>    api_gw_name = optional(string, "eventpulse_api_gateway")<br/>    stage_name  = optional(string, "default")<br/>  })</pre> | `{}` | no |
+| <a name="input_api_gateway_configuration"></a> [api\_gateway\_configuration](#input\_api\_gateway\_configuration) | Configuration for the API Gateway | <pre>object({<br/>    api_gw_name = optional(string, "eventpulse_api_gateway")<br/>    stage_name  = optional(string, "v1")<br/>  })</pre> | `{}` | no |
 | <a name="input_api_gw_lambda"></a> [api\_gw\_lambda](#input\_api\_gw\_lambda) | Configuration for the API Gateway Lambda function | <pre>object({<br/>    function_name = optional(string, "eventpulse_api_gw_lambda_function")<br/>    role_name     = optional(string, "eventpulse_api_gw_lambda_function")<br/>    runtime       = optional(string, "python3.12")<br/>  })</pre> | `{}` | no |
 | <a name="input_dynamodb_table"></a> [dynamodb\_table](#input\_dynamodb\_table) | Configuration for the DynamoDB table | <pre>object({<br/>    name      = optional(string, "event-pulse-table")<br/>    hash_key  = optional(string)<br/>    range_key = optional(string)<br/>  })</pre> | n/a | yes |
 | <a name="input_iam_authenticated_user_configuration"></a> [iam\_authenticated\_user\_configuration](#input\_iam\_authenticated\_user\_configuration) | The configuration of the authenticated IAM user | <pre>object({<br/>    user_name   = string<br/>    role_name   = optional(string, "eventpulse_authenticated_user_role")<br/>    policy_name = optional(string, "eventpulse_authenticated_user_policy")<br/>  })</pre> | n/a | yes |
@@ -86,7 +86,7 @@
 
 | Name | Description |
 |------|-------------|
-| <a name="output_api_invoke_url"></a> [api\_invoke\_url](#output\_api\_invoke\_url) | The API invoke URL |
+| <a name="output_api_invoke_url"></a> [api\_invoke\_url](#output\_api\_invoke\_url) | The API invoke URL for the API Gateway |
 | <a name="output_authenticated_user_role_arn"></a> [authenticated\_user\_role\_arn](#output\_authenticated\_user\_role\_arn) | ARN of the IAM role for authenticated user to assume |
 | <a name="output_processing_bucket_name"></a> [processing\_bucket\_name](#output\_processing\_bucket\_name) | Name of the S3 processing bucket |
 | <a name="output_quarantine_bucket_name"></a> [quarantine\_bucket\_name](#output\_quarantine\_bucket\_name) | Name of the S3 quarantine bucket |
