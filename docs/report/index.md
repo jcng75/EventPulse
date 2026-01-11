@@ -418,3 +418,48 @@ To understand how to query the DynamoDB table, I referenced the following docume
 - [Boto3 Documentation](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb/client/query.html)
 
 When writing the query logic, I found that the `query` method from the boto3 DynamoDB client was used to retrieve items based on the provided keys.  The `KeyConditionExpression` parameter was utilized to specify the conditions for the query.  If only the ArtistID was provided, the expression would be `ArtistID = :artist_id`.  If both ArtistID and ItemID were provided, the expression would be `ArtistID = :artist_id AND ItemID = :item_id`.  After getting the response, the items are then filtered based on the requested attributes, if any.
+
+### Terraform - API Gateway Component
+
+
+When developing the terraform configurations for API Gateway, I found that it was a little difficult to follow what was needed.  When looking into the terraform documentation for [aws_apigatewayv2_api](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/apigatewayv2_api), I noticed that there were multiple resources needed to fully configure the API Gateway.  I did not know what each resource did at first, so I had to do some research to understand their purpose.  I stumbled upon [this article](https://developer.hashicorp.com/terraform/tutorials/aws/lambda-api-gateway) and used it as a starting point.  Here is a breakdown of the resources used:
+- `aws_apigatewayv2_api`: This resource creates the API Gateway itself.  It defines the name, protocol type (HTTP), and other basic settings.
+- `aws_apigatewayv2_integration`: This resource creates the integration between the API Gateway and the Lambda function.  There are different types of integrations, but for this project, the `AWS_PROXY` type was used.  This allows the API Gateway to proxy requests directly to the Lambda function.
+- `aws_apigatewayv2_route`: This resource creates the route for the API Gateway.  It defines the HTTP method (GET) and the path (/items) that will trigger the Lambda function.
+- `aws_apigatewayv2_stage`: This resource creates a stage for the API Gateway.  A stage is a named reference to a deployment of the API.  In this case, the stage is named "default".
+- `aws_lambda_permission`: This resource grants permission for the API
+
+Note: Currently the configuration has no authentication.  This will be revisited later to implement tighter security measures.
+
+In order to test the API Gateway, I used [Postman](https://www.postman.com/) to send HTTP requests to the API endpoint.  As I was not familiar with making API Gateway requests, I had to do some research cross referencing Copilot suggestions with documentation. For documentation sake, the API Gateway endpoint follows this structure:
+```
+https://{api_id}.execute-api.{region}.amazonaws.com/{stage_name}/{resource_path}
+```
+At this point, I realized that "v1" would be a better stage name than "default" for versioning purposes.  Additionally, since there is only one resource path, I decided to keep it as "items" within the Terraform outputs.  As a result, I updated the `variables.tf` and `outputs.tf` files accordingly.
+
+In initial testing, I encountered a few issues with the API Gateway requests.  The first issue was with the request URL.  I initially did not include the stage name in the URL, which resulted in a 404 error.  After adding the stage name, the request was able to reach the API Gateway, but I received a 500 error instead.  Looking at the CloudWatch logs, I saw the following:
+
+```
+{"httpMethod":"GET","integrationErrorMessage":"The response from the Lambda function doesn't match the format that API Gateway expects. Lambda body contains the wrong type for field "body"","protocol":"HTTP/1.1","requestId":"XCkJ3h1FIAMEMEw=","requestTime":"11/Jan/2026:21:46:38 +0000","resourcePath":"-","responseLength":"35","routeKey":"GET /items","sourceIp":"54.86.50.139","status":"500"}
+```
+
+This identified that the API gateway was connected to the integration, but the lambda function wasn't returning the expected format.  After doing some research, I found that the lambda function needed to return a specific JSON structure for API Gateway to process the response correctly.  The structure is as follows:
+
+```
+{
+  "statusCode": 200,
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": "<stringified JSON body>"
+}
+```
+
+Headers are optional but recommended to specify the content type.  The body must be a string, so the JSON object needs to be stringified using `json.dumps()` in Python.
+
+Once doing that, I was able to get successful responses from the API Gateway.  Here are some examples of requests and their corresponding responses:
+**Request 1: Get Specific Attributes from an Artist ID**
+<img src="./img/postman-success-response.jpg" alt="postman-success-response"/>
+
+**Request 2: Invalid Artist ID**
+<img src="./img/postman-invalid-artist-lookup.jpg" alt="postman-invalid-artist-lookup"/>

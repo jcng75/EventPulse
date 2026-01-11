@@ -27,8 +27,13 @@
 
 | Name | Type |
 |------|------|
+| [aws_apigatewayv2_api.lambda](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/apigatewayv2_api) | resource |
+| [aws_apigatewayv2_integration.lambda](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/apigatewayv2_integration) | resource |
+| [aws_apigatewayv2_route.query_table](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/apigatewayv2_route) | resource |
+| [aws_apigatewayv2_stage.lambda](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/apigatewayv2_stage) | resource |
 | [aws_cloudwatch_event_rule.s3_put_object_rule](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_rule) | resource |
 | [aws_cloudwatch_event_target.invoke_lambda](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_target) | resource |
+| [aws_cloudwatch_log_group.api_gw](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group) | resource |
 | [aws_dynamodb_table.table](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/dynamodb_table) | resource |
 | [aws_iam_policy.authenticated_user_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.eventbridge_invoke_lambda_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
@@ -46,6 +51,7 @@
 | [aws_iam_role_policy_attachment.process_lambda_s3_access](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.process_lambda_sns_publish_access](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_lambda_permission.allow_eventbridge](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_permission) | resource |
+| [aws_lambda_permission.api_gw](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_permission) | resource |
 | [aws_s3_bucket.processing_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket.quarantine_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket_notification.enable_eventbridge](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_notification) | resource |
@@ -66,6 +72,7 @@
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_account_id"></a> [account\_id](#input\_account\_id) | The AWS account ID where resources will be created | `string` | n/a | yes |
+| <a name="input_api_gateway_configuration"></a> [api\_gateway\_configuration](#input\_api\_gateway\_configuration) | Configuration for the API Gateway | <pre>object({<br/>    api_gw_name = optional(string, "eventpulse_api_gateway")<br/>    stage_name  = optional(string, "v1")<br/>  })</pre> | `{}` | no |
 | <a name="input_api_gw_lambda"></a> [api\_gw\_lambda](#input\_api\_gw\_lambda) | Configuration for the API Gateway Lambda function | <pre>object({<br/>    function_name = optional(string, "eventpulse_api_gw_lambda_function")<br/>    role_name     = optional(string, "eventpulse_api_gw_lambda_function")<br/>    runtime       = optional(string, "python3.12")<br/>  })</pre> | `{}` | no |
 | <a name="input_dynamodb_table"></a> [dynamodb\_table](#input\_dynamodb\_table) | Configuration for the DynamoDB table | <pre>object({<br/>    name      = optional(string, "event-pulse-table")<br/>    hash_key  = optional(string)<br/>    range_key = optional(string)<br/>  })</pre> | n/a | yes |
 | <a name="input_iam_authenticated_user_configuration"></a> [iam\_authenticated\_user\_configuration](#input\_iam\_authenticated\_user\_configuration) | The configuration of the authenticated IAM user | <pre>object({<br/>    user_name   = string<br/>    role_name   = optional(string, "eventpulse_authenticated_user_role")<br/>    policy_name = optional(string, "eventpulse_authenticated_user_policy")<br/>  })</pre> | n/a | yes |
@@ -79,6 +86,7 @@
 
 | Name | Description |
 |------|-------------|
+| <a name="output_api_invoke_url"></a> [api\_invoke\_url](#output\_api\_invoke\_url) | The API invoke URL for the API Gateway |
 | <a name="output_authenticated_user_role_arn"></a> [authenticated\_user\_role\_arn](#output\_authenticated\_user\_role\_arn) | ARN of the IAM role for authenticated user to assume |
 | <a name="output_processing_bucket_name"></a> [processing\_bucket\_name](#output\_processing\_bucket\_name) | Name of the S3 processing bucket |
 | <a name="output_quarantine_bucket_name"></a> [quarantine\_bucket\_name](#output\_quarantine\_bucket\_name) | Name of the S3 quarantine bucket |
