@@ -3,7 +3,8 @@ An event-based serverless architecture project tasked with processing and parsin
 
 ### Created and Written By - Justin Ng
 ### Started: September 12, 2025
-### Completed: TBD
+### v1 Completed: January 12, 2026
+### Optimizations: Presently Ongoing
 
 Credit to Tech with Soleyman for the project idea!
 
@@ -13,6 +14,7 @@ Credit to Tech with Soleyman for the project idea!
 - Access Credentials
 - Terraform
 - WSL2 (Preferred)
+- API Testing Tool (Postman, Insomnia, etc.)
 
 **Installation Guides(s)**:
 
@@ -36,4 +38,7 @@ dynamodb_table = "example-terraform-state-lock-table" # DynamoDB table managing 
 example_variable = "example_value"
 ```
 
-When properly configured, run `terraform init -backend-config=backend.conf` to initialize the state file into the S3 bucket.
+When properly configured, run `terraform init -backend-config=backend.conf` to initialize the state file into the S3 bucket.  Then run `terraform apply` to provision the resources.
+
+# EventPulse Utilities
+Please reference the `scripts/README.md` file for utility scripts related to EventPulse.
