@@ -45,15 +45,37 @@ def make_query(dynamodb_table, artist_id, item_id=None, attributes=None):
         return {"error": str(e)}
 
 def lambda_handler(event, context):
+    try:
+        dynamodb_table = os.environ.get("DYNAMODB_TABLE", "event-pulse-table")
+        query_params = event.get("queryStringParameters", {})
 
-    dynamodb_table = os.environ.get("DYNAMODB_TABLE", "event-pulse-table")
+        artist_id = query_params.get("artist_id", None)
+        item_id = query_params.get("item_id", None)
 
-    test_info = {
-        "artist_id": "ISOKNOCK"
-    }
+        attributes_str = query_params.get("attributes", None)
+        attributes = None
+        if attributes_str:
+            attributes = attributes_str.split(",")
 
-    attributes = ["Title", "ItemID"]
+        if not artist_id:
+            return {
+                "statusCode": 400,
+                "body": json.dumps({"error": "artist_id is required"}),
+                "headers": {"Content-Type": "application/json"}
+            }
 
-    response = make_query(dynamodb_table=dynamodb_table, artist_id=test_info["artist_id"], attributes=attributes)
+        response = make_query(dynamodb_table=dynamodb_table, artist_id=artist_id, attributes=attributes, item_id=item_id)
 
-    return {"statusCode": 200, "body": response}
+        return {
+            "statusCode": 200,
+            "body": json.dumps(response, default=str),
+            "headers": {"Content-Type": "application/json"}
+        }
+
+    except Exception as e:
+        print(f"Error in lambda_handler: {str(e)}")
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"error": str(e)}),
+            "headers": {"Content-Type": "application/json"}
+        }

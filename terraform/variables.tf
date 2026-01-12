@@ -89,6 +89,17 @@ variable "sns_configuration" {
   description = "Configuration for SNS topics"
 }
 
+### API Gateway Variables
+
+variable "api_gateway_configuration" {
+  type = object({
+    api_gw_name = optional(string, "eventpulse_api_gateway")
+    stage_name  = optional(string, "v1")
+  })
+  description = "Configuration for the API Gateway"
+  default     = {}
+}
+
 ### IAM Variables
 
 variable "iam_authenticated_user_configuration" {
