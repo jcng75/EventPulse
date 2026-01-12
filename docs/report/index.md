@@ -457,9 +457,93 @@ This identified that the API gateway was connected to the integration, but the l
 
 Headers are optional but recommended to specify the content type.  The body must be a string, so the JSON object needs to be stringified using `json.dumps()` in Python.
 
+It should also be noticed that the attributes parameter being passed in the query string must be a comma-separated list.  Initially, I was passing in a JSON array which caused issues with parsing the parameters.
+
 Once doing that, I was able to get successful responses from the API Gateway.  Here are some examples of requests and their corresponding responses:
 **Request 1: Get Specific Attributes from an Artist ID**
 <img src="./img/postman-success-response.jpg" alt="postman-success-response"/>
 
 **Request 2: Invalid Artist ID**
 <img src="./img/postman-invalid-artist-lookup.jpg" alt="postman-invalid-artist-lookup"/>
+
+### Python Utilities - API Query Tool
+
+To facilitate testing of the API Gateway outside of Postman, I created a new utility script `api_query.py` within the `scripts/utilities/api_query` directory.  This script is designed to make GET requests to the API Gateway endpoint with specified parameters.  The script uses the `requests` library to handle HTTP requests.
+
+When developing the script, I wanted the CLI interface to be user-friendly.  As a result, I looked into using the `click` library to handle command line arguments and options.  When looking into documentation, the arguments get created when using the `@click.option` decorator.  The `--artist-id` option is required, while the other two options are optional.
+
+**Example Response:**
+```
+python3 -m utilities.api_query.api_query --artist_id ISOKNOCK
+Querying API with params: {'artist_id': 'ISOKNOCK'}
+
+API Response:
+[
+  {
+    "Year": {
+      "N": "2024"
+    },
+    "Title": {
+      "S": "4EVR"
+    },
+    "Streams": {
+      "N": "6000000"
+    },
+    "ArtistID": {
+      "S": "ISOKNOCK"
+    },
+    "Duration": {
+      "N": "195"
+    },
+    "Features": {
+      "L": [
+        {
+          "S": "Knock2"
+        },
+        {
+          "S": "Isoxo"
+        }
+      ]
+    },
+    "EntityType": {
+      "S": "Track"
+    },
+    "ItemID": {
+      "S": "TRACK#4EVR"
+    }
+  },
+  {
+    "Duration": {
+      "N": "216"
+    },
+    "ItemID": {
+      "S": "TRACK#BLIND"
+    },
+    "Year": {
+      "N": "2024"
+    },
+    "Streams": {
+      "N": "1300000"
+    },
+    "ArtistID": {
+      "S": "ISOKNOCK"
+    },
+    "Title": {
+      "S": "BLIND"
+    },
+    "Features": {
+      "L": [
+        {
+          "S": "Knock2"
+        },
+        {
+          "S": "Isoxo"
+        }
+      ]
+    },
+    "EntityType": {
+      "S": "Track"
+    }
+  }
+]
+```
