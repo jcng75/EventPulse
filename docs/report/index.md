@@ -1,8 +1,8 @@
-# S5 - Secure Static Simple Storage Service
+# EventPulse - Project Report
 
 ### Created and Written By - Justin Ng
 ### Started: September 12, 2025
-### Completed: TBD
+### v1 Completed: January 12, 2026
 
 # Process Documentation
 
@@ -547,3 +547,7 @@ API Response:
   }
 ]
 ```
+
+With that, the project has been completed as per the initial requirements.  Further improvements can be made to enhance security, error handling, and overall functionality.  Future steps could include implementing authentication for the API Gateway, refining IAM policies for least privilege, and adding more robust logging and monitoring for the lambda functions.
+
+**Version 1.0 Complete: January 12, 2026**
