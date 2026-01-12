@@ -28,3 +28,13 @@ python3 -m utilities.s3_quarantine_tool.s3_quarantine_tool <command> <object_key
 ### Commands
 - `check`: Check if a specific object is quarantined.
 - `remove`: Remove a specific quarantined object.
+
+## API Query Tool
+This utility script makes GET requests to an API Gateway endpoint with specified parameters.  Ensure that the configuration within the script is updated with the correct endpoint URL before running.
+
+### Usage
+```bash
+python3 -m utilities.api_query.api_query --artist-id <artist_id> --attributes "<attributes>" --item_id <item_id>
+```
+
+**NOTE:** The `--attributes` parameter should be a comma-separated list of attributes.
