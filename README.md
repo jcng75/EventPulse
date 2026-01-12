@@ -42,3 +42,9 @@ When properly configured, run `terraform init -backend-config=backend.conf` to i
 
 # EventPulse Utilities
 Please reference the `scripts/README.md` file for utility scripts related to EventPulse.
+
+Don't hesitate to share any feedback or concerns about the project using the contact information provided below. Also, if there's anything else you'd like to discuss, feel free to reach out!
+
+[Email](mailto:justinchunng@gmail.com) <br>
+[LinkedIn](https://www.linkedin.com/in/justinchunng/) <br>
+[GitHub](https://github.com/jcng75)
