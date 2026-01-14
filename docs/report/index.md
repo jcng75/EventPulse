@@ -551,3 +551,13 @@ API Response:
 With that, the project has been completed as per the initial requirements.  Further improvements can be made to enhance security, error handling, and overall functionality.  Future steps could include implementing authentication for the API Gateway, refining IAM policies for least privilege, and adding more robust logging and monitoring for the lambda functions.
 
 **Version 1.0 Complete: January 12, 2026**
+
+## Version 2 - Ongoing Improvements
+
+The next part of the project will focus on optimizations and improvements based on best practices.  This includes tightening security measures, refining IAM policies, and enhancing the overall architecture for scalability and maintainability.  These optimizations are presently ongoing and will be documented in future updates.
+
+### Terraform - IAM Least Privilege
+
+I wanted to take a look at refining the IAM policies to implement the principle of least privilege.  The first problem that was tacked was the [IAM confused deputy problem](https://docs.aws.amazon.com/IAM/latest/UserGuide/confused-deputy.html).  To summarize, the lambda roles allowed all lambda principals to assume the role.  This can be considered a security vulnerability as it also permits **other** AWS accounts using lambdas to assume the role.  As a result,
+
+Currently, the policies attached to the IAM roles grant full access `Amazon{Service}FullAccess`, which is too permissive for the intended use cases.  When looking into the specific actions needed for each service, it seems that the actions can be narrowed down significantly.
