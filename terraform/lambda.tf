@@ -1,5 +1,6 @@
 ## Process JSON Lambda Function
 
+# IAM Role for Process JSON Lambda
 data "aws_iam_policy_document" "process_lambda_assume_role" {
   statement {
     effect = "Allow"
@@ -10,6 +11,12 @@ data "aws_iam_policy_document" "process_lambda_assume_role" {
     }
 
     actions = ["sts:AssumeRole"]
+
+    condition {
+      test = "StringEquals"
+      variable = "aws:SourceAccount"
+      values = [var.account_id]
+    }
   }
 }
 
@@ -70,6 +77,12 @@ data "aws_iam_policy_document" "api_lambda_assume_role" {
     }
 
     actions = ["sts:AssumeRole"]
+
+    condition {
+      test = "StringEquals"
+      variable = "aws:SourceAccount"
+      values = [var.account_id]
+    }
   }
 }
 
