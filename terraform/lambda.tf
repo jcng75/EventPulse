@@ -13,9 +13,9 @@ data "aws_iam_policy_document" "process_lambda_assume_role" {
     actions = ["sts:AssumeRole"]
 
     condition {
-      test = "StringEquals"
+      test     = "StringEquals"
       variable = "aws:SourceAccount"
-      values = [var.account_id]
+      values   = [var.account_id]
     }
   }
 }
@@ -26,25 +26,57 @@ resource "aws_iam_role" "process_lambda_role" {
   tags               = var.tags
 }
 
+resource "aws_iam_policy" "process_lambda_policy" {
+  name        = var.process_json_lambda.policy_name
+  description = "Policy for Process JSON Lambda with least privilege"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:UpdateItem"
+        ]
+        Resource = aws_dynamodb_table.table.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject",
+          "s3:GetObject",
+          "s3:DeleteObject"
+        ]
+        Resource = [
+          aws_s3_bucket.processing_bucket.arn,
+          "${aws_s3_bucket.processing_bucket.arn}/*",
+          aws_s3_bucket.quarantine_bucket.arn,
+          "${aws_s3_bucket.quarantine_bucket.arn}/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "sns:Publish"
+        ]
+        Resource = aws_sns_topic.alerts_topic.arn
+      }
+    ]
+  })
+  tags = var.tags
+}
+
 resource "aws_iam_role_policy_attachment" "process_lambda_basic_execution" {
   role       = aws_iam_role.process_lambda_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-resource "aws_iam_role_policy_attachment" "process_lambda_dynamodb_access" {
+resource "aws_iam_role_policy_attachment" "process_lambda_role_attachment" {
   role       = aws_iam_role.process_lambda_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
+  policy_arn = aws_iam_policy.process_lambda_policy.arn
 }
 
-resource "aws_iam_role_policy_attachment" "process_lambda_s3_access" {
-  role       = aws_iam_role.process_lambda_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
-}
-
-resource "aws_iam_role_policy_attachment" "process_lambda_sns_publish_access" {
-  role       = aws_iam_role.process_lambda_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSNSFullAccess"
-}
 
 module "process_lambda" {
   source = "./modules/lambda"
@@ -79,9 +111,9 @@ data "aws_iam_policy_document" "api_lambda_assume_role" {
     actions = ["sts:AssumeRole"]
 
     condition {
-      test = "StringEquals"
+      test     = "StringEquals"
       variable = "aws:SourceAccount"
-      values = [var.account_id]
+      values   = [var.account_id]
     }
   }
 }
@@ -92,19 +124,27 @@ resource "aws_iam_role" "api_lambda_role" {
   tags               = var.tags
 }
 
+resource "aws_iam_policy" "api_lambda_policy" {
+  name        = var.api_gw_lambda.policy_name
+  description = "Policy for API GW Lambda with least privilege"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetItem"
+        ]
+        Resource = aws_dynamodb_table.table.arn
+      }
+    ]
+  })
+  tags = var.tags
+}
+
 resource "aws_iam_role_policy_attachment" "api_lambda_basic_execution" {
   role       = aws_iam_role.api_lambda_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-}
-
-resource "aws_iam_role_policy_attachment" "api_lambda_dynamodb_access" {
-  role       = aws_iam_role.api_lambda_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
-}
-
-resource "aws_iam_role_policy_attachment" "api_lambda_sns_publish_access" {
-  role       = aws_iam_role.api_lambda_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSNSFullAccess"
 }
 
 module "api_lambda" {

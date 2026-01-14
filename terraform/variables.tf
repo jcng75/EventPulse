@@ -63,6 +63,7 @@ variable "process_json_lambda" {
   type = object({
     function_name = optional(string, "eventpulse_process_json_lambda_function")
     role_name     = optional(string, "eventpulse_process_json_lambda_role")
+    policy_name   = optional(string, "eventpulse_process_json_lambda_policy")
     runtime       = optional(string, "python3.12")
   })
   description = "Configuration for the Process JSON Lambda function"
@@ -73,6 +74,7 @@ variable "api_gw_lambda" {
   type = object({
     function_name = optional(string, "eventpulse_api_gw_lambda_function")
     role_name     = optional(string, "eventpulse_api_gw_lambda_function")
+    policy_name   = optional(string, "eventpulse_api_gw_lambda_policy")
     runtime       = optional(string, "python3.12")
   })
   description = "Configuration for the API Gateway Lambda function"
