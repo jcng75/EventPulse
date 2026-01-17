@@ -52,6 +52,13 @@ resource "aws_iam_policy" "authenticated_user_policy" {
           aws_s3_bucket.quarantine_bucket.arn,
           "${aws_s3_bucket.quarantine_bucket.arn}/*"
         ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:GetParameter"
+        ]
+        Resource = aws_ssm_parameter.api_key_parameter.arn
       }
     ]
   })

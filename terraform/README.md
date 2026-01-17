@@ -100,4 +100,5 @@
 | <a name="output_authenticated_user_role_arn"></a> [authenticated\_user\_role\_arn](#output\_authenticated\_user\_role\_arn) | ARN of the IAM role for authenticated user to assume |
 | <a name="output_processing_bucket_name"></a> [processing\_bucket\_name](#output\_processing\_bucket\_name) | Name of the S3 processing bucket |
 | <a name="output_quarantine_bucket_name"></a> [quarantine\_bucket\_name](#output\_quarantine\_bucket\_name) | Name of the S3 quarantine bucket |
+| <a name="output_ssm_api_key_parameter_name"></a> [ssm\_api\_key\_parameter\_name](#output\_ssm\_api\_key\_parameter\_name) | The name of the SSM Parameter Store entry for the API Key |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

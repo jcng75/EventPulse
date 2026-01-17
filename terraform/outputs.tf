@@ -19,3 +19,8 @@ output "api_invoke_url" {
   description = "The API invoke URL for the API Gateway"
   value       = "${aws_apigatewayv2_stage.lambda.invoke_url}/items"
 }
+
+output "ssm_api_key_parameter_name" {
+  description = "The name of the SSM Parameter Store entry for the API Key"
+  value       = aws_ssm_parameter.api_key_parameter.name
+}
