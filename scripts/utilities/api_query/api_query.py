@@ -27,7 +27,6 @@ def main(artist_id, item_id, attributes):
     invoke_url = "https://jz7eq1qnk8.execute-api.us-east-1.amazonaws.com/v1/items" # `api_invoke_url` value
     ssm_parameter = "/eventpulse/api_gateway/api_key" # `ssm_api_key_parameter_name` value
     iam_role = "arn:aws:iam::1234567891012:role/eventpulse_authenticated_user_role" # Replace with your IAM role ARN
-    iam_role = "arn:aws:iam::796973511517:role/eventpulse_authenticated_user_role"
 
     credentials = get_credentials(iam_role)
 
