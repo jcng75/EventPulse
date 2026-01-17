@@ -133,9 +133,12 @@ resource "aws_iam_policy" "api_lambda_policy" {
       {
         Effect = "Allow"
         Action = [
-          "dynamodb:GetItem"
+          "dynamodb:GetItem",
+          "dynamodb:Query"
         ]
-        Resource = aws_dynamodb_table.table.arn
+        Resource = [aws_dynamodb_table.table.arn,
+          "${aws_dynamodb_table.table.arn}/*"
+        ]
       }
     ]
   })
@@ -145,6 +148,11 @@ resource "aws_iam_policy" "api_lambda_policy" {
 resource "aws_iam_role_policy_attachment" "api_lambda_basic_execution" {
   role       = aws_iam_role.api_lambda_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy_attachment" "api_lambda_role_attachment" {
+  role       = aws_iam_role.api_lambda_role.name
+  policy_arn = aws_iam_policy.api_lambda_policy.arn
 }
 
 module "api_lambda" {
