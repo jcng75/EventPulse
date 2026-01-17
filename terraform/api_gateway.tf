@@ -42,11 +42,12 @@ resource "aws_apigatewayv2_integration" "lambda" {
 
 resource "aws_apigatewayv2_route" "query_table" {
   api_id = aws_apigatewayv2_api.lambda.id
-  # api_key_required = true
-  # authorizer_id = aws_apigatewayv2_authorizer.api_key_authorizer.id
 
   route_key = "GET /items"
   target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
+
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.api_key_authorizer.id
 }
 
 resource "aws_cloudwatch_log_group" "api_gw" {
@@ -66,6 +67,16 @@ resource "aws_lambda_permission" "api_gw" {
   source_arn = "${aws_apigatewayv2_api.lambda.execution_arn}/*/*"
 }
 
+# Allow API Gateway to invoke the authorizer Lambda
+resource "aws_lambda_permission" "authorizer" {
+  statement_id  = "AllowExecutionFromAPIGatewayAuthorizer"
+  action        = "lambda:InvokeFunction"
+  function_name = module.api_auth_lambda.lambda_name
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${aws_apigatewayv2_api.lambda.execution_arn}/authorizers/${aws_apigatewayv2_authorizer.api_key_authorizer.id}"
+}
+
 resource "aws_api_gateway_api_key" "api_key" {
   name        = var.api_gateway_configuration.api_key_name
   description = "API Key for accessing the API Gateway"
@@ -82,10 +93,11 @@ resource "aws_ssm_parameter" "api_key_parameter" {
   tags        = var.tags
 }
 
-# resource "aws_apigatewayv2_authorizer" "api_key_authorizer" {
-#   api_id           = aws_apigatewayv2_api.lambda.id
-#   authorizer_type  = "REQUEST"
-#   authorizer_uri   = aws_lambda_function.authorizer.invoke_arn
-#   identity_sources = ["$request.header.x-api-key"]
-#   name             = "api-key-authorizer"
-# }
+resource "aws_apigatewayv2_authorizer" "api_key_authorizer" {
+  api_id                            = aws_apigatewayv2_api.lambda.id
+  authorizer_type                   = "REQUEST"
+  authorizer_payload_format_version = "2.0"
+  authorizer_uri                    = module.api_auth_lambda.lambda_invoke_url
+  identity_sources                  = ["$request.header.x-api-key"]
+  name                              = "api-key-authorizer"
+}
