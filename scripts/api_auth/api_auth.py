@@ -19,50 +19,37 @@ def get_ssm_parameter(parameter_name):
         return None
 
 def lambda_handler(event, context):
-    ssm_parameter = os.environ.get("SSM_PARAMETER_NAME")
-    x_api_key = event['headers'].get('x-api-key')
+    try:
 
-    if not x_api_key:
+        ssm_parameter = os.environ.get("API_GATEWAY_SSM")
+
+        # HTTP API authorizers receive headers in lowercase
+        headers = event.get('headers', {})
+        x_api_key = headers.get('x-api-key') or headers.get('X-Api-Key')
+
+        if not x_api_key:
+            print("No API key found in headers")
+            return {
+                "isAuthorized": False
+            }
+
+        ssm_value = get_ssm_parameter(ssm_parameter)
+
+        if not ssm_value:
+            print("Failed to retrieve SSM parameter")
+            return {
+                "isAuthorized": False
+            }
+
+        is_valid = x_api_key == ssm_value
+        print(f"API key validation result: {is_valid}")
+
         return {
-            "statusCode": 401,
-            "body": json.dumps({
-                "isAuthorized": False,
-                "context": {
-                    "message": "Unauthorized: Missing x-api-key header"
-                }
-                })
+            "isAuthorized": is_valid
         }
 
-    ssm_value = get_ssm_parameter(ssm_parameter)
-
-    if not ssm_value:
+    except Exception as e:
+        print(f"Error in lambda_handler: {str(e)}")
         return {
-            "statusCode": 500,
-            "body": json.dumps({
-                "isAuthorized": False,
-                "context": {
-                    "message": "Internal Server Error: Unable to retrieve API key"
-                }
-                })
-        }
-
-    if x_api_key == ssm_value:
-        return {
-            "statusCode": 200,
-            "body": json.dumps({
-                "isAuthorized": True,
-                "context": {
-                    "message": "Authorized"
-                }
-                })
-        }
-    else:
-        return {
-            "statusCode": 403,
-            "body": json.dumps({
-                "isAuthorized": False,
-                "context": {
-                    "message": "Forbidden: Invalid API key"
-                }
-                })
+            "isAuthorized": False
         }

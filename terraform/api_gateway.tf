@@ -35,9 +35,10 @@ resource "aws_apigatewayv2_stage" "lambda" {
 resource "aws_apigatewayv2_integration" "lambda" {
   api_id = aws_apigatewayv2_api.lambda.id
 
-  integration_uri    = module.api_lambda.lambda_invoke_url
-  integration_type   = "AWS_PROXY"
-  integration_method = "POST"
+  integration_uri        = module.api_lambda.lambda_invoke_url
+  integration_type       = "AWS_PROXY"
+  integration_method     = "POST"
+  payload_format_version = "2.0"
 }
 
 resource "aws_apigatewayv2_route" "query_table" {
@@ -100,4 +101,7 @@ resource "aws_apigatewayv2_authorizer" "api_key_authorizer" {
   authorizer_uri                    = module.api_auth_lambda.lambda_invoke_url
   identity_sources                  = ["$request.header.x-api-key"]
   name                              = "api-key-authorizer"
+
+  # Allow Lambda to return True/False response
+  enable_simple_responses = true
 }
