@@ -95,8 +95,9 @@ variable "sns_configuration" {
 
 variable "api_gateway_configuration" {
   type = object({
-    api_gw_name = optional(string, "eventpulse_api_gateway")
-    stage_name  = optional(string, "v1")
+    api_gw_name  = optional(string, "eventpulse_api_gateway")
+    stage_name   = optional(string, "v1")
+    api_key_name = optional(string, "eventpulse_api_key")
   })
   description = "Configuration for the API Gateway"
   default     = {}

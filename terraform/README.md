@@ -27,6 +27,7 @@
 
 | Name | Type |
 |------|------|
+| [aws_api_gateway_api_key.api_key](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/api_gateway_api_key) | resource |
 | [aws_apigatewayv2_api.lambda](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/apigatewayv2_api) | resource |
 | [aws_apigatewayv2_integration.lambda](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/apigatewayv2_integration) | resource |
 | [aws_apigatewayv2_route.query_table](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/apigatewayv2_route) | resource |
@@ -61,6 +62,7 @@
 | [aws_sns_topic.alerts_topic](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic) | resource |
 | [aws_sns_topic_policy.alert_topic_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic_policy) | resource |
 | [aws_sns_topic_subscription.alert_email_subscription](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic_subscription) | resource |
+| [aws_ssm_parameter.api_key_parameter](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_parameter) | resource |
 | [aws_iam_policy_document.api_lambda_assume_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.eventbridge_invoke_lambda_role_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.process_lambda_assume_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
@@ -71,7 +73,7 @@
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_account_id"></a> [account\_id](#input\_account\_id) | The AWS account ID where resources will be created | `string` | n/a | yes |
-| <a name="input_api_gateway_configuration"></a> [api\_gateway\_configuration](#input\_api\_gateway\_configuration) | Configuration for the API Gateway | <pre>object({<br/>    api_gw_name = optional(string, "eventpulse_api_gateway")<br/>    stage_name  = optional(string, "v1")<br/>  })</pre> | `{}` | no |
+| <a name="input_api_gateway_configuration"></a> [api\_gateway\_configuration](#input\_api\_gateway\_configuration) | Configuration for the API Gateway | <pre>object({<br/>    api_gw_name  = optional(string, "eventpulse_api_gateway")<br/>    stage_name   = optional(string, "v1")<br/>    api_key_name = optional(string, "eventpulse_api_key")<br/>  })</pre> | `{}` | no |
 | <a name="input_api_gw_lambda"></a> [api\_gw\_lambda](#input\_api\_gw\_lambda) | Configuration for the API Gateway Lambda function | <pre>object({<br/>    function_name = optional(string, "eventpulse_api_gw_lambda_function")<br/>    role_name     = optional(string, "eventpulse_api_gw_lambda_function")<br/>    policy_name   = optional(string, "eventpulse_api_gw_lambda_policy")<br/>    runtime       = optional(string, "python3.12")<br/>  })</pre> | `{}` | no |
 | <a name="input_dynamodb_table"></a> [dynamodb\_table](#input\_dynamodb\_table) | Configuration for the DynamoDB table | <pre>object({<br/>    name      = optional(string, "event-pulse-table")<br/>    hash_key  = optional(string)<br/>    range_key = optional(string)<br/>  })</pre> | n/a | yes |
 | <a name="input_iam_authenticated_user_configuration"></a> [iam\_authenticated\_user\_configuration](#input\_iam\_authenticated\_user\_configuration) | The configuration of the authenticated IAM user | <pre>object({<br/>    user_name   = string<br/>    role_name   = optional(string, "eventpulse_authenticated_user_role")<br/>    policy_name = optional(string, "eventpulse_authenticated_user_policy")<br/>  })</pre> | n/a | yes |

@@ -42,6 +42,8 @@ resource "aws_apigatewayv2_integration" "lambda" {
 
 resource "aws_apigatewayv2_route" "query_table" {
   api_id = aws_apigatewayv2_api.lambda.id
+  # api_key_required = true
+  # authorizer_id = aws_apigatewayv2_authorizer.api_key_authorizer.id
 
   route_key = "GET /items"
   target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
@@ -63,3 +65,27 @@ resource "aws_lambda_permission" "api_gw" {
 
   source_arn = "${aws_apigatewayv2_api.lambda.execution_arn}/*/*"
 }
+
+resource "aws_api_gateway_api_key" "api_key" {
+  name        = var.api_gateway_configuration.api_key_name
+  description = "API Key for accessing the API Gateway"
+  enabled     = true
+  tags        = var.tags
+}
+
+# Store API Key in SSM Parameter Store
+resource "aws_ssm_parameter" "api_key_parameter" {
+  name        = "/eventpulse/api_gateway/api_key"
+  description = "API Key for EventPulse API Gateway"
+  type        = "SecureString"
+  value       = aws_api_gateway_api_key.api_key.value
+  tags        = var.tags
+}
+
+# resource "aws_apigatewayv2_authorizer" "api_key_authorizer" {
+#   api_id           = aws_apigatewayv2_api.lambda.id
+#   authorizer_type  = "REQUEST"
+#   authorizer_uri   = aws_lambda_function.authorizer.invoke_arn
+#   identity_sources = ["$request.header.x-api-key"]
+#   name             = "api-key-authorizer"
+# }
