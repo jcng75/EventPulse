@@ -35,7 +35,35 @@ dynamodb_table = "example-terraform-state-lock-table" # DynamoDB table managing 
 
 ***terraform.tfvars*** - All terraform variables should be populated here.
 ```
-example_variable = "example_value"
+account_id = "1234567891012" # Your AWS Account ID
+
+processing_bucket = {
+  name          = "eventpulse-processing-bucket"
+  region        = "us-east-1"
+  force_destroy = true
+}
+
+quarantine_bucket = {
+  name          = "eventpulse-quarantine-bucket"
+  region        = "us-east-1"
+  force_destroy = true
+}
+
+dynamodb_table = {
+  name      = "event-pulse-table"
+  hash_key  = "ArtistID"
+  range_key = "ItemID"
+}
+
+sns_configuration = {
+  name          = "eventpulse_sns_alert_topic"
+  email_address = "justinchunng@gmail.com" # Your email for SNS alerts
+}
+
+iam_authenticated_user_configuration = {
+  user_name = "user" # Your IAM user name
+}
+
 ```
 
 When properly configured, run `terraform init -backend-config=backend.conf` to initialize the state file into the S3 bucket.  Then run `terraform apply` to provision the resources.

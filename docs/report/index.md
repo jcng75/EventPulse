@@ -602,3 +602,17 @@ I still ran into 500 issues after making the change.  I then checked back to the
 <img src="./img/postman-auth-success.jpg" alt="postman-auth-success"/>
 
 After confirming authorization, I had to update the architectural diagram to reflect the changes made.  The diagram now includes the API Gateway authorizer Lambda function and the SSM parameter store for the API key.
+
+### Python Utility - API Query Tool Update
+
+The final improvement made was to update the `api_query.py` utility script to include the API key in the request headers.  The script was updated to pull the API key from the SSM parameter store using the boto3 SSM client.  The API key is then included in the headers of the GET request to the API Gateway endpoint.
+
+When testing the updated script, I was able to successfully query the API Gateway using the API key for authorization.  The only problem that I ran into was that the role was originally not authorized to read from SSM.  To fix this, I updated the IAM policy attached to the authenticated user to include the `ssm:GetParameter` action.  After doing so, the script was able to retrieve the API key from SSM and make authorized requests to the API Gateway!
+
+## Conclusion
+
+This project has been a comprehensive exercise in building a serverless application using AWS services and Terraform.  The initial requirements were met, and several improvements were made to enhance security, functionality, and maintainability.  The use of Terraform allowed for infrastructure as code, making it easier to manage and version control the AWS resources.  The Python scripts provided utility functions for interacting with the AWS services, facilitating testing and user interactions. I encountered several challenges along the way, particularly with IAM permissions and API Gateway configurations.  However, these challenges provided valuable learning experiences and insights into best practices for AWS architecture and security.  Overall, this project has been a successful demonstration of building a serverless application with AWS and Terraform, and it serves as a solid foundation for future enhancements and features.
+
+If you made it this far, thank you for reading!  I hope this documentation has been helpful in understanding the project and its components.  If you have any questions or feedback, please feel free to reach out in the links provided within the [README.md](../../README.md) at the bottom.
+
+Keep on building in the cloud!
