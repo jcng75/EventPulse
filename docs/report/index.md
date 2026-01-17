@@ -560,4 +560,12 @@ The next part of the project will focus on optimizations and improvements based 
 
 I wanted to take a look at refining the IAM policies to implement the principle of least privilege.  The first problem that was tacked was the [IAM confused deputy problem](https://docs.aws.amazon.com/IAM/latest/UserGuide/confused-deputy.html).  To summarize, the lambda roles allowed all lambda principals to assume the role.  This can be considered a security vulnerability as it also permits **other** AWS accounts using lambdas to assume the role.  As a result,
 
-Currently, the policies attached to the IAM roles grant full access `Amazon{Service}FullAccess`, which is too permissive for the intended use cases.  When looking into the specific actions needed for each service, it seems that the actions can be narrowed down significantly.
+Currently, the policies attached to the IAM roles grant full access `Amazon{Service}FullAccess`, which is too permissive for the intended use cases.  When looking into the specific actions needed for each service, it seems that the actions can be narrowed down significantly.  Instead of using full access policies, I created custom IAM policies using the [aws_iam_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) resource.  These policies define only the necessary actions for each service.
+
+When testing the new policies, I encountered an issue with the API Gateway lambda function.  The lambda function was unable to query the DynamoDB table due to insufficient permissions.  After reviewing the policy document, I realized that the `dynamodb:Query` action was missing from the policy.  To fix this, I updated the policy document to include the `dynamodb:Query` action.
+
+```
+    "error": "An error occurred (AccessDeniedException) when calling the Query operation: User: arn:aws:sts::xxxxxxxxxxxx:assumed-role/eventpulse_api_gw_lambda_function/eventpulse_api_gw_lambda_function is not authorized to perform: dynamodb:Query on resource: arn:aws:dynamodb:us-east-1:xxxxxxxxxxxx:table/event-pulse-table because no identity-based policy allows the dynamodb:Query action"
+```
+
+What was interesting to find was that the expected IAM changes took time to propagate.  After updating the policies and running the applies, I waited a few minutes before retesting the API Gateway lambda function.  Initially, I still encountered the same access denied error.  However, after waiting for about 10 minutes, the changes took effect and the lambda function was able to query the DynamoDB table successfully.
