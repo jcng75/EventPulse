@@ -569,3 +569,9 @@ When testing the new policies, I encountered an issue with the API Gateway lambd
 ```
 
 What was interesting to find was that the expected IAM changes took time to propagate.  After updating the policies and running the applies, I waited a few minutes before retesting the API Gateway lambda function.  Initially, I still encountered the same access denied error.  However, after waiting for about 10 minutes, the changes took effect and the lambda function was able to query the DynamoDB table successfully.
+
+### Terraform - API Gateway Authentication
+
+The next improvement was to implement authentication for the API Gateway.  To do this, I decided to implement an authorizer.  After researching the different types of authorizers, I decided to use an API key authorizer for simplicity.  This would allow users to access the API Gateway using a predefined API key. To implement this, I created a new resource `aws_api_gateway_api_key` to define the API key.  Additionally, I had to update the `aws_apigatewayv2_route` resource to require the API key for access.  We then needed to create an authorizer using the `aws_apigatewayv2_authorizer` resource.  This authorizer would validate the API key provided in the request headers.
+
+When looking into the apply more, it seems that the authorizer could not be applied as it required a brand new Lambda.  After consulting with sources online, it seems that the API key should be stored into an SSM parameter store for better security practices.  This value could then be pulled using the new Lambda function to validate the API key.  As a result, the authorizer implementation has been paused for now to focus on creating the SSM parameter and new Lambda function.
