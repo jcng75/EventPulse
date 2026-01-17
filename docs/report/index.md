@@ -575,3 +575,19 @@ What was interesting to find was that the expected IAM changes took time to prop
 The next improvement was to implement authentication for the API Gateway.  To do this, I decided to implement an authorizer.  After researching the different types of authorizers, I decided to use an API key authorizer for simplicity.  This would allow users to access the API Gateway using a predefined API key. To implement this, I created a new resource `aws_api_gateway_api_key` to define the API key.  Additionally, I had to update the `aws_apigatewayv2_route` resource to require the API key for access.  We then needed to create an authorizer using the `aws_apigatewayv2_authorizer` resource.  This authorizer would validate the API key provided in the request headers.
 
 When looking into the apply more, it seems that the authorizer could not be applied as it required a brand new Lambda.  After consulting with sources online, it seems that the API key should be stored into an SSM parameter store for better security practices.  This value could then be pulled using the new Lambda function to validate the API key.  As a result, the authorizer implementation has been paused for now to focus on creating the SSM parameter and new Lambda function.
+
+
+### Terraform/Python - API Gateway Authentication Lambda
+
+To implement the API key validation, I created a new Lambda function `api_auth.py` within the `scripts/api_auth` directory. The SSM ARN was referenced as an environment variable for the lambda.  That would then be pulled using the boto3 SSM client [get_parameter](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm/client/get_parameter.html) method.  When looking up what the Lambda should return, it seems that it expects `isAuthorized` and `context` keys within the response body.  The `isAuthorized` key would be set to true if the provided API key matches the stored value in SSM.  The `context` key can contain additional information that can be passed to the downstream Lambda function.  Here is an example of the expected response format:
+
+```
+{
+  "isAuthorized": true|false,
+  "context": {
+    "stringKey": "stringValue",
+    "numberKey": 123,
+    "booleanKey": true
+  }
+}
+```

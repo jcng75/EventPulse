@@ -27,7 +27,9 @@ def lambda_handler(event, context):
             "statusCode": 401,
             "body": json.dumps({
                 "isAuthorized": False,
-                "message": "Unauthorized: Missing x-api-key header"
+                "context": {
+                    "message": "Unauthorized: Missing x-api-key header"
+                }
                 })
         }
 
@@ -38,7 +40,9 @@ def lambda_handler(event, context):
             "statusCode": 500,
             "body": json.dumps({
                 "isAuthorized": False,
-                "message": "Internal Server Error: Unable to retrieve API key"
+                "context": {
+                    "message": "Internal Server Error: Unable to retrieve API key"
+                }
                 })
         }
 
@@ -47,7 +51,9 @@ def lambda_handler(event, context):
             "statusCode": 200,
             "body": json.dumps({
                 "isAuthorized": True,
-                "message": "Authorized"
+                "context": {
+                    "message": "Authorized"
+                }
                 })
         }
     else:
@@ -55,6 +61,8 @@ def lambda_handler(event, context):
             "statusCode": 403,
             "body": json.dumps({
                 "isAuthorized": False,
-                "message": "Forbidden: Invalid API key"
+                "context": {
+                    "message": "Forbidden: Invalid API key"
+                }
                 })
         }
