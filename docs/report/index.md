@@ -574,7 +574,7 @@ What was interesting to find was that the expected IAM changes took time to prop
 
 The next improvement was to implement authentication for the API Gateway.  To do this, I decided to implement an authorizer.  After researching the different types of authorizers, I decided to use an API key authorizer for simplicity.  This would allow users to access the API Gateway using a predefined API key. To implement this, I created a new resource `aws_api_gateway_api_key` to define the API key.  Additionally, I had to update the `aws_apigatewayv2_route` resource to require the API key for access.  We then needed to create an authorizer using the `aws_apigatewayv2_authorizer` resource.  This authorizer would validate the API key provided in the request headers.
 
-When looking into the apply more, it seems that the authorizer could not be applied as it required a brand new Lambda.  After consulting with sources online, it seems that the API key should be stored into an SSM parameter store for better security practices.  This value could then be pulled using the new Lambda function to validate the API key.  As a result, the authorizer implementation has been paused for now to focus on creating the SSM parameter and new Lambda function.
+When looking into the apply more, it seems that the authorizer could not be applied as it required a brand new Lambda.  It should be noted that using REST API can handle this natively, and an additional Lambda is not required.  The downside to using the REST API is that setup in other places becomes a lot more complex.  For this reason, I decided to just create a new Lambda for the authorizor.  After consulting with sources online, it seems that the API key should be stored into an SSM parameter store for better security practices.  This value could then be pulled using the new Lambda function to validate the API key.  As a result, the authorizer implementation has been paused for now to focus on creating the SSM parameter and new Lambda function.
 
 
 ### Terraform/Python - API Gateway Authentication Lambda
@@ -591,3 +591,12 @@ To implement the API key validation, I created a new Lambda function `api_auth.p
   }
 }
 ```
+
+The next portion of debugging took a bit longer than expected.  When testing the API Gateway with the new authorizer, I kept encountering a 500 error.  The problem I had was that the Cloudwatch logs for the authorizer Lambda were not showing any logs at all.  After looking into the issue, this lead me to understand that the API Gateway was not able to invoke the Lambda function due to insufficient permissions.  To fix this, I had to create a new `aws_lambda_permission` resource to grant the API Gateway permission to invoke the authorizer Lambda function.  After adding this resource and running the applies, I was able to see logs in CloudWatch for the authorizer Lambda function, but NOT the main API Gateway Lambda function.  This indicated that the authorizer was being invoked, but the request was failing authorization.
+
+Consulting with AI resources, I realized that the issue was how the API authorizer result was being passed.  Since the payload format was set to "2.0", the integration expected the payload format version to be the same.  To fix this, the `payload_format_version` was set to "2.0" (default 1.0) in the `aws_apigatewayv2_integration` resource for the main API Gateway Lambda function.
+
+I still ran into 500 issues after making the change.  I then checked back to the `aws_apigatewayv2_authorizer` terraform documentation and noticed the `enable_simple_responses` parameter.  This parameter was set to false by default, which meant that the authorizer was expected to return a full IAM policy document.  That practice was something that was used more for REST APIs.  By setting the parameter to true, the authorizer would accept simple responses with the `isAuthorized` key.  After making this change and running the applies, I was finally able to get successful responses from the API Gateway with the authorizer in place.
+
+**Successful Authorized Request:**
+<img src="./img/postman-auth-success.jpg" alt="postman-auth-success"/>
