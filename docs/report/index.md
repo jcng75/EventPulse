@@ -600,3 +600,5 @@ I still ran into 500 issues after making the change.  I then checked back to the
 
 **Successful Authorized Request:**
 <img src="./img/postman-auth-success.jpg" alt="postman-auth-success"/>
+
+After confirming authorization, I had to update the architectural diagram to reflect the changes made.  The diagram now includes the API Gateway authorizer Lambda function and the SSM parameter store for the API key.
