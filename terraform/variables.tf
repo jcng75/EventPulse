@@ -81,6 +81,17 @@ variable "api_gw_lambda" {
   default     = {}
 }
 
+variable "api_auth_lambda" {
+  type = object({
+    function_name = optional(string, "eventpulse_api_auth_lambda_function")
+    role_name     = optional(string, "eventpulse_api_auth_lambda_function")
+    policy_name   = optional(string, "eventpulse_api_auth_lambda_policy")
+    runtime       = optional(string, "python3.12")
+  })
+  description = "Configuration for the API Gateway Authorization Lambda function"
+  default     = {}
+}
+
 ### SNS Variables
 
 variable "sns_configuration" {
