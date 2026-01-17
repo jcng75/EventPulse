@@ -8,3 +8,4 @@ terraform.tfvars
 backend.conf
 process_json.zip
 api_gw.zip
+api_auth.zip

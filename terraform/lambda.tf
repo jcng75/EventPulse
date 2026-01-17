@@ -172,3 +172,75 @@ module "api_lambda" {
   }
   tags = var.tags
 }
+
+## API Gateway Authorization Lambda Function
+
+data "aws_iam_policy_document" "api_auth_lambda_assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceAccount"
+      values   = [var.account_id]
+    }
+  }
+}
+
+resource "aws_iam_role" "api_auth_lambda_role" {
+  name               = var.api_auth_lambda.role_name
+  assume_role_policy = data.aws_iam_policy_document.api_auth_lambda_assume_role.json
+  tags               = var.tags
+}
+
+resource "aws_iam_policy" "api_auth_lambda_policy" {
+  name        = var.api_auth_lambda.policy_name
+  description = "Policy for API Authorizer Lambda with least privilege"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:GetParameter"
+        ]
+        Resource = aws_ssm_parameter.api_key_parameter.arn
+      }
+    ]
+  })
+  tags = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "api_auth_lambda_basic_execution" {
+  role       = aws_iam_role.api_auth_lambda_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy_attachment" "api_auth_lambda_role_attachment" {
+  role       = aws_iam_role.api_auth_lambda_role.name
+  policy_arn = aws_iam_policy.api_auth_lambda_policy.arn
+}
+
+module "api_auth_lambda" {
+  source = "./modules/lambda"
+
+  iam_role             = aws_iam_role.api_auth_lambda_role.arn
+  lambda_handler       = "api_auth.lambda_handler"
+  lambda_runtime       = var.api_auth_lambda.runtime
+  lambda_function_name = var.api_auth_lambda.function_name
+  archive_file_configuration = {
+    source_file = "${path.module}/../scripts/api_auth/api_auth.py"
+    output_path = "${path.module}/lambda/api_auth.zip"
+  }
+  environment_variables = {
+    API_GATEWAY_SSM = aws_ssm_parameter.api_key_parameter.name
+  }
+  tags = var.tags
+}

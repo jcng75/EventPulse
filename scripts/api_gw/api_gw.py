@@ -35,7 +35,6 @@ def make_query(dynamodb_table, artist_id, item_id=None, attributes=None):
         # Filter attributes if specified
         for item in post_filtered_items:
             keys_to_remove = [key for key in item.keys() if key not in attributes]
-            print(keys_to_remove)
             for key in keys_to_remove:
                 item.pop(key)
 
@@ -46,6 +45,7 @@ def make_query(dynamodb_table, artist_id, item_id=None, attributes=None):
 
 def lambda_handler(event, context):
     try:
+
         dynamodb_table = os.environ.get("DYNAMODB_TABLE", "event-pulse-table")
         query_params = event.get("queryStringParameters", {})
 
