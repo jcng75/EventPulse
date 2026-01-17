@@ -209,12 +209,9 @@ resource "aws_iam_policy" "api_auth_lambda_policy" {
       {
         Effect = "Allow"
         Action = [
-          "dynamodb:GetItem",
-          "dynamodb:Query"
+          "ssm:GetParameter"
         ]
-        Resource = [aws_dynamodb_table.table.arn,
-          "${aws_dynamodb_table.table.arn}/*"
-        ]
+        Resource = aws_ssm_parameter.api_key_parameter.arn
       }
     ]
   })
